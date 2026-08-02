@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Waybon.App.Views.ProfilePage"
+    xmlns:vm="clr-namespace:Waybon.App.ViewModels"
+    x:DataType="vm:ProfileViewModel"
+    BackgroundColor="{StaticResource Stone100}"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Padding="32"
+                Spacing="0"
+                WidthRequest="384">
+
+                <Border
+                    BackgroundColor="{StaticResource White}"
+                    Stroke="{StaticResource Stone300}"
+                    StrokeThickness="1"
+                    StrokeShape="Rectangle"
+                    Padding="32">
+
+                    <VerticalStackLayout Spacing="16">
+
+                        <Label
+                            Text="{Binding Username, StringFormat='¡Hola, {0}!'}"
+                            FontFamily="PTSerifRegular"
+                            FontSize="24"
+                            TextColor="{StaticResource Stone800}"
+                            HorizontalOptions="Center"/>
+
+                        <Label
+                            Text="Esta es una página temporal."
+                            FontFamily="PTSerifRegular"
+                            FontSize="14"
+                            TextColor="{StaticResource Stone500}"
+                            HorizontalOptions="Center"/>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,8"/>
+
+                        <Button
+                            Text="Cerrar sesión"
+                            FontFamily="PTSerifRegular"
+                            BackgroundColor="{StaticResource Stone800}"
+                            TextColor="{StaticResource White}"
+                            BorderColor="{StaticResource Stone800}"
+                            BorderWidth="1"
+                            CornerRadius="0"
+                            Padding="12,10"
+                            Command="{Binding LogoutCommand}"/>
+
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>
