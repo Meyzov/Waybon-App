@@ -6,19 +6,16 @@
     xmlns:views="clr-namespace:Waybon.App.Views"
     FlyoutBehavior="Disabled">
 
-    <!-- Login route -->
     <ShellContent
         Route="login"
         ContentTemplate="{DataTemplate views:LoginPage}"/>
 
-    <!-- Main app route (temporary placeholder) -->
     <ShellContent
         Route="profile"
         ContentTemplate="{DataTemplate views:ProfilePage}"/>
 
-    <!-- Register route (temporary, also points to placeholder) -->
     <ShellContent
         Route="register"
-        ContentTemplate="{DataTemplate views:ProfilePage}"/>
+        ContentTemplate="{DataTemplate views:RegisterPage}"/>
 
 </Shell>

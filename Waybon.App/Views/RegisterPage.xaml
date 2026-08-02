@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Waybon.App.Views.RegisterPage"
+    xmlns:vm="clr-namespace:Waybon.App.ViewModels"
+    x:DataType="vm:RegisterViewModel"
+    BackgroundColor="{StaticResource Stone100}"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Padding="32"
+                Spacing="0"
+                WidthRequest="384">
+
+                <Border
+                    BackgroundColor="{StaticResource White}"
+                    Stroke="{StaticResource Stone300}"
+                    StrokeThickness="1"
+                    StrokeShape="Rectangle"
+                    Padding="32">
+
+                    <VerticalStackLayout Spacing="0">
+
+                        <Label
+                            Text="Registro"
+                            FontFamily="PTSerifRegular"
+                            FontSize="30"
+                            TextColor="{StaticResource Stone800}"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,8"/>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,32"/>
+
+                        <!-- Username -->
+                        <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
+                            <Label
+                                Text="Nombre de usuario"
+                                FontFamily="PTSerifRegular"
+                                FontSize="14"
+                                TextColor="{StaticResource Stone700}"/>
+
+                            <Border
+                                Stroke="{StaticResource Stone400}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                HeightRequest="40"
+                                Padding="8,0"
+                                BackgroundColor="Transparent">
+
+                                <Entry
+                                    Text="{Binding Username}"
+                                    FontFamily="PTSerifRegular"
+                                    TextColor="{StaticResource Stone900}"
+                                    BackgroundColor="Transparent"
+                                    VerticalOptions="Center"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Email -->
+                        <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
+                            <Label
+                                Text="Email"
+                                FontFamily="PTSerifRegular"
+                                FontSize="14"
+                                TextColor="{StaticResource Stone700}"/>
+
+                            <Border
+                                Stroke="{StaticResource Stone400}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                HeightRequest="40"
+                                Padding="8,0"
+                                BackgroundColor="Transparent">
+
+                                <Entry
+                                    Text="{Binding Email}"
+                                    Keyboard="Email"
+                                    FontFamily="PTSerifRegular"
+                                    TextColor="{StaticResource Stone900}"
+                                    BackgroundColor="Transparent"
+                                    VerticalOptions="Center"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Password -->
+                        <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
+                            <Label
+                                Text="Contraseña"
+                                FontFamily="PTSerifRegular"
+                                FontSize="14"
+                                TextColor="{StaticResource Stone700}"/>
+
+                            <Border
+                                Stroke="{StaticResource Stone400}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                HeightRequest="40"
+                                Padding="0"
+                                BackgroundColor="Transparent">
+
+                                <Grid ColumnDefinitions="*,1,42">
+                                    <Entry
+                                        Grid.Column="0"
+                                        Text="{Binding Password}"
+                                        IsPassword="{Binding IsPassword}"
+                                        FontFamily="PTSerifRegular"
+                                        TextColor="{StaticResource Stone900}"
+                                        BackgroundColor="Transparent"
+                                        Margin="8,0"
+                                        VerticalOptions="Center"/>
+
+                                    <BoxView Grid.Column="1" WidthRequest="1" Color="{StaticResource Stone400}" />
+
+                                    <Grid Grid.Column="2" BackgroundColor="{StaticResource Stone100}">
+                                        <Path
+                                            Data="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                            Fill="Transparent"
+                                            Stroke="{StaticResource Stone600}"
+                                            StrokeThickness="2"
+                                            WidthRequest="20"
+                                            HeightRequest="20"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center"
+                                            Aspect="Uniform"/>
+
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding TogglePasswordCommand}"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Role -->
+                        <VerticalStackLayout Spacing="4" Margin="0,0,0,32">
+                            <Label
+                                Text="Rol"
+                                FontFamily="PTSerifRegular"
+                                FontSize="14"
+                                TextColor="{StaticResource Stone700}"/>
+
+                            <Border
+                                Stroke="{StaticResource Stone400}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                HeightRequest="40"
+                                Padding="8,0"
+                                BackgroundColor="Transparent">
+
+                                <Entry
+                                    Text="{Binding RoleName}"
+                                    FontFamily="PTSerifRegular"
+                                    TextColor="{StaticResource Stone900}"
+                                    BackgroundColor="Transparent"
+                                    VerticalOptions="Center"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,16"/>
+
+                        <Button
+                            Text="Registrarse"
+                            FontFamily="PTSerifRegular"
+                            FontSize="16"
+                            BackgroundColor="{StaticResource Stone800}"
+                            TextColor="{StaticResource White}"
+                            CornerRadius="0"
+                            HeightRequest="40"
+                            Margin="0,0,0,12"
+                            Command="{Binding RegisterCommand}"/>
+
+                        <Button
+                            Text="Volver a iniciar sesión"
+                            FontFamily="PTSerifRegular"
+                            FontSize="16"
+                            BackgroundColor="Transparent"
+                            TextColor="{StaticResource Stone800}"
+                            BorderColor="{StaticResource Stone800}"
+                            BorderWidth="1"
+                            CornerRadius="0"
+                            HeightRequest="40"
+                            Command="{Binding NavigateToLoginCommand}"/>
+
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

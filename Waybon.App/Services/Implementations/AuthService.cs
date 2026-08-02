@@ -25,5 +25,26 @@ namespace Waybon.App.Services.Implementations
 
             return await response.Content.ReadFromJsonAsync<LoginResponse>();
         }
+
+        public async Task<bool> RegisterAsync(RegisterRequest request)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                "api/auth/register", request
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>();
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
     }
 }

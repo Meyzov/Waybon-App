@@ -2,9 +2,9 @@ using Waybon.App.ViewModels;
 
 namespace Waybon.App.Views
 {
-    public partial class LoginPage : ContentPage
+    public partial class RegisterPage : ContentPage
     {
-        public LoginPage(LoginViewModel viewModel)
+        public RegisterPage(RegisterViewModel viewModel)
         {
             InitializeComponent();
             BindingContext = viewModel;
