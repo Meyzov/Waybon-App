@@ -18,5 +18,15 @@ namespace Waybon.App.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            if (PropertyChanged == null)
+            {
+                return;
+            }
+
+            PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

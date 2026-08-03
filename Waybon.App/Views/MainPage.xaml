@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Waybon.App.Views.MainPage"
+    xmlns:vm="clr-namespace:Waybon.App.ViewModels"
+    x:DataType="vm:MainViewModel"
+    BackgroundColor="{StaticResource Stone100}"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- Content panels -->
+        <Grid Grid.Row="0">
+            <!-- Map panel -->
+            <Border
+                IsVisible="{Binding IsMapVisible}"
+                BackgroundColor="{StaticResource White}"
+                Stroke="{StaticResource Stone300}"
+                StrokeThickness="1"
+                Margin="16,16,16,8"
+                Padding="0">
+
+                <WebView
+                    x:Name="MapWebView"
+                    VerticalOptions="Fill"
+                    HorizontalOptions="Fill"/>
+            </Border>
+
+            <!-- Groups panel -->
+            <Border
+                IsVisible="{Binding IsGroupsVisible}"
+                BackgroundColor="{StaticResource White}"
+                Stroke="{StaticResource Stone300}"
+                StrokeThickness="1"
+                Margin="16,16,16,8"
+                Padding="32">
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                    <Label
+                        Text="Grupos"
+                        FontFamily="PTSerifRegular"
+                        FontSize="24"
+                        TextColor="{StaticResource Stone800}"
+                        HorizontalOptions="Center"/>
+                    <Label
+                        Text="Próximamente..."
+                        FontFamily="PTSerifRegular"
+                        FontSize="14"
+                        TextColor="{StaticResource Stone500}"
+                        HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Profile panel -->
+            <Border
+                IsVisible="{Binding IsProfileVisible}"
+                BackgroundColor="{StaticResource White}"
+                Stroke="{StaticResource Stone300}"
+                StrokeThickness="1"
+                Margin="16,16,16,8"
+                Padding="32">
+
+                <Grid RowDefinitions="*,Auto" BindingContext="{Binding Profile}" x:DataType="vm:ProfileViewModel">
+                    <ScrollView Grid.Row="0">
+                        <VerticalStackLayout Spacing="0">
+                            <Label
+                                Text="Panel de Usuario"
+                                FontFamily="PTSerifRegular"
+                                FontSize="30"
+                                TextColor="{StaticResource Stone800}"
+                                HorizontalOptions="Center"
+                                Margin="0,0,0,8"/>
+                            <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,32"/>
+                            <Border
+                                BackgroundColor="#FAFAF9"
+                                Stroke="{StaticResource Stone200}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                Padding="24"
+                                Margin="0,0,0,32">
+                                <HorizontalStackLayout Spacing="24" VerticalOptions="Center">
+                                    <Border
+                                        WidthRequest="80"
+                                        HeightRequest="80"
+                                        BackgroundColor="{StaticResource Stone200}"
+                                        Stroke="{StaticResource Stone300}"
+                                        StrokeThickness="1"
+                                        StrokeShape="Rectangle"
+                                        HorizontalOptions="Start"
+                                        VerticalOptions="Center">
+                                        <Path
+                                            Data="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            Fill="{StaticResource Stone400}"
+                                            Aspect="Uniform"
+                                            HeightRequest="40"
+                                            WidthRequest="40"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center"/>
+                                    </Border>
+                                    <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                        <Label
+                                            Text="{Binding Username}"
+                                            FontFamily="PTSerifRegular"
+                                            FontSize="24"
+                                            TextColor="{StaticResource Stone800}"
+                                            FontAttributes="Bold"/>
+                                        <Label
+                                            Text="{Binding RoleName}"
+                                            FontFamily="PTSerifRegular"
+                                            FontSize="16"
+                                            TextColor="{StaticResource Stone600}"/>
+                                    </VerticalStackLayout>
+                                </HorizontalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+                    </ScrollView>
+                    <VerticalStackLayout Grid.Row="1" Spacing="0">
+                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,16"/>
+                        <Button
+                            Text="Cerrar Sesión"
+                            FontFamily="PTSerifRegular"
+                            FontSize="16"
+                            BackgroundColor="{StaticResource Stone800}"
+                            TextColor="{StaticResource White}"
+                            BorderColor="{StaticResource Stone800}"
+                            BorderWidth="1"
+                            CornerRadius="0"
+                            HeightRequest="40"
+                            Command="{Binding LogoutCommand}"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Bottom navigation bar -->
+        <Grid
+            Grid.Row="1"
+            ColumnDefinitions="*,*,*"
+            ColumnSpacing="2"
+            Margin="16,0,16,16"
+            VerticalOptions="End">
+
+            <!-- Map tab -->
+            <Border
+                Grid.Column="0"
+                HeightRequest="{Binding MapHeight}"
+                VerticalOptions="End"
+                BackgroundColor="{Binding MapBackground}"
+                Stroke="{StaticResource Stone300}"
+                StrokeThickness="1"
+                StrokeShape="Rectangle"
+                Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SelectMapCommand}"/>
+                </Border.GestureRecognizers>
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Spacing="4">
+                    <Path
+                        Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                        Fill="{Binding MapTextColor}"
+                        Aspect="Uniform"
+                        HeightRequest="20"
+                        WidthRequest="20"/>
+                    <Label
+                        Text="Mapa"
+                        FontFamily="PTSerifRegular"
+                        FontSize="12"
+                        TextColor="{Binding MapTextColor}"
+                        HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Groups tab -->
+            <Border
+                Grid.Column="1"
+                HeightRequest="{Binding GroupsHeight}"
+                VerticalOptions="End"
+                BackgroundColor="{Binding GroupsBackground}"
+                Stroke="{StaticResource Stone300}"
+                StrokeThickness="1"
+                StrokeShape="Rectangle"
+                Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SelectGroupsCommand}"/>
+                </Border.GestureRecognizers>
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Spacing="4">
+                    <Path
+                        Data="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        Fill="{Binding GroupsTextColor}"
+                        Aspect="Uniform"
+                        HeightRequest="20"
+                        WidthRequest="20"/>
+                    <Label
+                        Text="Grupos"
+                        FontFamily="PTSerifRegular"
+                        FontSize="12"
+                        TextColor="{Binding GroupsTextColor}"
+                        HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Profile tab -->
+            <Border
+                Grid.Column="2"
+                HeightRequest="{Binding ProfileHeight}"
+                VerticalOptions="End"
+                BackgroundColor="{Binding ProfileBackground}"
+                Stroke="{StaticResource Stone300}"
+                StrokeThickness="1"
+                StrokeShape="Rectangle"
+                Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SelectProfileCommand}"/>
+                </Border.GestureRecognizers>
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Spacing="4">
+                    <Path
+                        Data="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        Fill="{Binding ProfileTextColor}"
+                        Aspect="Uniform"
+                        HeightRequest="20"
+                        WidthRequest="20"/>
+                    <Label
+                        Text="Perfil"
+                        FontFamily="PTSerifRegular"
+                        FontSize="12"
+                        TextColor="{Binding ProfileTextColor}"
+                        HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
+
+    </Grid>
+</ContentPage>

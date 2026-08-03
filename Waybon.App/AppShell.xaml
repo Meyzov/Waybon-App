@@ -7,12 +7,16 @@
     FlyoutBehavior="Disabled">
 
     <ShellContent
+        Route="loading"
+        ContentTemplate="{DataTemplate views:LoadingPage}"/>
+
+    <ShellContent
         Route="login"
         ContentTemplate="{DataTemplate views:LoginPage}"/>
 
     <ShellContent
-        Route="profile"
-        ContentTemplate="{DataTemplate views:ProfilePage}"/>
+        Route="main"
+        ContentTemplate="{DataTemplate views:MainPage}"/>
 
     <ShellContent
         Route="register"

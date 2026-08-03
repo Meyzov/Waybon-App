@@ -26,6 +26,7 @@ namespace Waybon.App
             builder.Services.AddSingleton<IPreferencesService, PreferencesService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
+            builder.Services.AddSingleton<ISessionService, SessionService>();
 
             builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
             {
@@ -33,14 +34,17 @@ namespace Waybon.App
             });
 
             // --- ViewModels ---
+            builder.Services.AddTransient<LoadingViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
             builder.Services.AddTransient<ProfileViewModel>();
+            builder.Services.AddTransient<MainViewModel>();
 
             // --- Vistas ---
+            builder.Services.AddTransient<LoadingPage>();
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<RegisterPage>();
-            builder.Services.AddTransient<ProfilePage>();
+            builder.Services.AddTransient<MainPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

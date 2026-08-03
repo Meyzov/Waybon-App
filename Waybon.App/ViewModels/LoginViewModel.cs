@@ -84,7 +84,7 @@ namespace Waybon.App.ViewModels
                 }
 
                 SaveSession(result);
-                await _navigationService.GoToAsync("//profile");
+                await _navigationService.GoToAsync("//main");
             }
             catch (Exception ex)
             {
