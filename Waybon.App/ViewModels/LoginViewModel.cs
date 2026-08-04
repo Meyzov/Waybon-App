@@ -41,9 +41,12 @@ namespace Waybon.App.ViewModels
                 if (SetProperty(ref _isBusy, value))
                 {
                     LoginCommand.ChangeCanExecute();
+                    OnPropertyChanged(nameof(LoginButtonText));
                 }
             }
         }
+
+        public string LoginButtonText => IsBusy ? "Entrando..." : "Entrar";
 
         public Command LoginCommand { get; }
         public Command TogglePasswordCommand { get; }

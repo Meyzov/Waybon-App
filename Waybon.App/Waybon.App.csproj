@@ -61,6 +61,7 @@
 	  <ApplicationId>com.meyzov.waybon.app</ApplicationId>
 	  <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 	  <ApplicationTitle>Waybon</ApplicationTitle>
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-maccatalyst|AnyCPU'">

@@ -2,7 +2,10 @@
 {
     public partial class MainViewModel : BaseViewModel
     {
-        public ProfileViewModel Profile { get; }
+        public ProfileViewModel Profile
+        {
+            get;
+        }
 
         private string _selectedTab = "Map";
 
@@ -13,7 +16,7 @@
             {
                 if (SetProperty(ref _selectedTab, value))
                 {
-                    RaiseTabPropertiesChanged();
+                    TabChaged();
                 }
             }
         }
@@ -22,18 +25,14 @@
         public bool IsGroupsVisible => SelectedTab == "Groups";
         public bool IsProfileVisible => SelectedTab == "Profile";
 
-        public double MapHeight => SelectedTab == "Map" ? 78 : 68;
-        public double GroupsHeight => SelectedTab == "Groups" ? 78 : 68;
-        public double ProfileHeight => SelectedTab == "Profile" ? 78 : 68;
+        public Color MapButtonBackground => IsMapVisible ? Color.FromArgb("#292524") : Colors.Transparent;
+        public Color MapButtonTextColor => IsMapVisible ? Colors.White : Color.FromArgb("#57534E");
 
-        public Color MapBackground => SelectedTab == "Map" ? Colors.White : Color.FromArgb("#F5F5F4");
-        public Color MapTextColor => SelectedTab == "Map" ? Color.FromArgb("#292524") : Color.FromArgb("#57534E");
+        public Color GroupsButtonBackground => IsGroupsVisible ? Color.FromArgb("#292524") : Colors.Transparent;
+        public Color GroupsButtonTextColor => IsGroupsVisible ? Colors.White : Color.FromArgb("#57534E");
 
-        public Color GroupsBackground => SelectedTab == "Groups" ? Colors.White : Color.FromArgb("#F5F5F4");
-        public Color GroupsTextColor => SelectedTab == "Groups" ? Color.FromArgb("#292524") : Color.FromArgb("#57534E");
-
-        public Color ProfileBackground => SelectedTab == "Profile" ? Colors.White : Color.FromArgb("#F5F5F4");
-        public Color ProfileTextColor => SelectedTab == "Profile" ? Color.FromArgb("#292524") : Color.FromArgb("#57534E");
+        public Color ProfileButtonBackground => IsProfileVisible ? Color.FromArgb("#292524") : Colors.Transparent;
+        public Color ProfileButtonTextColor => IsProfileVisible ? Colors.White : Color.FromArgb("#57534E");
 
         public Command SelectMapCommand { get; }
         public Command SelectGroupsCommand { get; }
@@ -48,24 +47,18 @@
             SelectProfileCommand = new Command(() => SelectedTab = "Profile");
         }
 
-        private void RaiseTabPropertiesChanged()
+        private void TabChaged()
         {
             OnPropertyChanged(nameof(IsMapVisible));
             OnPropertyChanged(nameof(IsGroupsVisible));
             OnPropertyChanged(nameof(IsProfileVisible));
 
-            OnPropertyChanged(nameof(MapHeight));
-            OnPropertyChanged(nameof(GroupsHeight));
-            OnPropertyChanged(nameof(ProfileHeight));
-
-            OnPropertyChanged(nameof(MapBackground));
-            OnPropertyChanged(nameof(MapTextColor));
-
-            OnPropertyChanged(nameof(GroupsBackground));
-            OnPropertyChanged(nameof(GroupsTextColor));
-
-            OnPropertyChanged(nameof(ProfileBackground));
-            OnPropertyChanged(nameof(ProfileTextColor));
+            OnPropertyChanged(nameof(MapButtonBackground));
+            OnPropertyChanged(nameof(MapButtonTextColor));
+            OnPropertyChanged(nameof(GroupsButtonBackground));
+            OnPropertyChanged(nameof(GroupsButtonTextColor));
+            OnPropertyChanged(nameof(ProfileButtonBackground));
+            OnPropertyChanged(nameof(ProfileButtonTextColor));
         }
     }
 }

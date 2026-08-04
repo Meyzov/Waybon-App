@@ -54,9 +54,12 @@ namespace Waybon.App.ViewModels
                 if (SetProperty(ref _isBusy, value))
                 {
                     RegisterCommand.ChangeCanExecute();
+                    OnPropertyChanged(nameof(RegisterButtonText));
                 }
             }
         }
+
+        public string RegisterButtonText => IsBusy ? "Registrando..." : "Registrarse";
 
         public Command RegisterCommand { get; }
         public Command TogglePasswordCommand { get; }

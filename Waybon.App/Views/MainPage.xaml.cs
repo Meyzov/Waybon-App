@@ -13,7 +13,7 @@ namespace Waybon.App.Views
         {
             try
             {
-                var html = await ReadResourceAsync("Map.html");
+                var html = await ReadResourceAsync("map.html");
                 var css = await ReadResourceAsync("maplibre-gl.css");
                 var js = await ReadResourceAsync("maplibre-gl.js");
                 var styleJson = await ReadResourceAsync("style.json");
@@ -37,7 +37,7 @@ namespace Waybon.App.Views
             }
         }
 
-        private async Task<string> ReadResourceAsync(string filename)
+        private static async Task<string> ReadResourceAsync(string filename)
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync(filename);
             using var reader = new StreamReader(stream);

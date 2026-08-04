@@ -129,7 +129,7 @@
                         <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,16"/>
 
                         <Button
-                            Text="Entrar"
+                            Text="{Binding LoginButtonText}"
                             FontFamily="PTSerifRegular"
                             FontSize="16"
                             BackgroundColor="{StaticResource Stone800}"
