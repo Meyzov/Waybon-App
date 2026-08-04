@@ -2,10 +2,19 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     x:Class="Waybon.App.Views.LoadingPage"
     xmlns:vm="clr-namespace:Waybon.App.ViewModels"
     x:DataType="vm:LoadingViewModel"
+    x:Name="Loading"
     BackgroundColor="{StaticResource Stone100}"
     Shell.NavBarIsVisible="False">
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior
+            EventName="Appearing"
+            Command="{Binding InitializeCommand}"
+            BindingContext="{Binding Source={x:Reference Loading}, Path=BindingContext}" />
+    </ContentPage.Behaviors>
 
 </ContentPage>

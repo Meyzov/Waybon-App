@@ -1,42 +1,21 @@
-﻿using Waybon.App.Services.Implementations;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Waybon.App.Services.Interfaces;
 
 namespace Waybon.App.ViewModels
 {
-    public partial class ProfileViewModel : BaseViewModel
+    public partial class ProfileViewModel(INavigationService navigationService, IPreferencesService preferencesService, ISessionService sessionService) : ObservableObject
     {
-        private readonly INavigationService _navigationService;
-        private readonly IPreferencesService _preferencesService;
-        private readonly ISessionService _sessionService;
+        private readonly INavigationService _navigationService = navigationService;
+        private readonly ISessionService _sessionService = sessionService;
 
-        private string _username = string.Empty;
-        private string _roleName = string.Empty;
+        [ObservableProperty]
+        public partial string Username { get; set; } = preferencesService.Get("waybon_username", "Usuario");
 
-        public string Username
-        {
-            get => _username;
-            set => SetProperty(ref _username, value);
-        }
+        [ObservableProperty]
+        public partial string RoleName { get; set; } = preferencesService.Get("waybon_roleName", "Rol");
 
-        public string RoleName
-        {
-            get => _roleName;
-            set => SetProperty(ref _roleName, value);
-        }
-
-        public Command LogoutCommand { get; }
-
-        public ProfileViewModel(INavigationService navigationService, IPreferencesService preferencesService, ISessionService sessionService)
-        {
-            _navigationService = navigationService;
-            _preferencesService = preferencesService;
-            _sessionService = sessionService;
-
-            Username = _preferencesService.Get("waybon_username", "Usuario");
-            RoleName = _preferencesService.Get("waybon_roleName", "Rol");
-            LogoutCommand = new Command(async () => await LogoutAsync());
-        }
-
+        [RelayCommand]
         private async Task LogoutAsync()
         {
             _sessionService.ClearSession();

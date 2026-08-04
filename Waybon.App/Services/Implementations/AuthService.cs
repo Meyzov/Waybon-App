@@ -8,14 +8,11 @@ namespace Waybon.App.Services.Implementations
     {
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<LoginResponse?> LoginAsync(string email, string password)
+        public async Task<LoginResponse?> LoginAsync(LoginRequest request)
         {
             var response = await _httpClient.PostAsJsonAsync
             (
-                "api/auth/login", new
-                {
-                    email, password
-                }
+                "api/auth/login", request
             );
 
             if (!response.IsSuccessStatusCode)

@@ -4,7 +4,7 @@ namespace Waybon.App.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<LoginResponse?> LoginAsync(string email, string password);
+        Task<LoginResponse?> LoginAsync(LoginRequest request);
         Task<bool> RegisterAsync(RegisterRequest request);
     }
 }

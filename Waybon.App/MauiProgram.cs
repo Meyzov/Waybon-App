@@ -3,6 +3,7 @@ using Waybon.App.Services.Implementations;
 using Waybon.App.Services.Interfaces;
 using Waybon.App.ViewModels;
 using Waybon.App.Views;
+using CommunityToolkit.Maui;
 
 namespace Waybon.App
 {
@@ -13,6 +14,7 @@ namespace Waybon.App
             var builder = MauiApp.CreateBuilder();
 
             builder.UseMauiApp<App>();
+            builder.UseMauiCommunityToolkit();
             builder.ConfigureFonts
             (
                 fonts =>
@@ -28,17 +30,30 @@ namespace Waybon.App
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<ISessionService, SessionService>();
 
-            builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
-            {
-                client.BaseAddress = new Uri("https://waybon-api.onrender.com/");
-            });
+            builder.Services.AddHttpClient<IAuthService, AuthService>
+            (
+                client =>
+                {
+                    client.BaseAddress = new Uri("https://waybon-api.onrender.com/");
+                }
+            );
+
+            builder.Services.AddHttpClient<IGroupService, GroupService>
+            (
+                client =>
+                {
+                    client.BaseAddress = new Uri("https://waybon-api.onrender.com/");
+                }
+            );
 
             // --- ViewModels ---
             builder.Services.AddTransient<LoadingViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
             builder.Services.AddTransient<ProfileViewModel>();
+            builder.Services.AddTransient<GroupViewModel>();
             builder.Services.AddTransient<MainViewModel>();
+            
 
             // --- Vistas ---
             builder.Services.AddTransient<LoadingPage>();

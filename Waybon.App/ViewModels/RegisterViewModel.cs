@@ -1,81 +1,50 @@
-﻿using Waybon.App.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Waybon.App.Models;
 using Waybon.App.Services.Interfaces;
 
 namespace Waybon.App.ViewModels
 {
-    public partial class RegisterViewModel : BaseViewModel
+    public partial class RegisterViewModel(IAuthService authService, INavigationService navigationService, IDialogService dialogService) : ObservableObject
     {
-        private readonly IAuthService _authService;
-        private readonly INavigationService _navigationService;
-        private readonly IDialogService _dialogService;
+        private readonly IAuthService _authService = authService;
+        private readonly INavigationService _navigationService = navigationService;
+        private readonly IDialogService _dialogService = dialogService;
 
-        private string _username = string.Empty;
-        private string _email = string.Empty;
-        private string _password = string.Empty;
-        private string _roleName = string.Empty;
-        private bool _isPassword = true;
-        private bool _isBusy;
+        [ObservableProperty]
+        public partial string Username { get; set; } = string.Empty;
 
-        public string Username
+        [ObservableProperty]
+        public partial string Email { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial string Password { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial string RoleName { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial bool IsPassword { get; set; } = true;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RegisterButtonText))]
+        [NotifyCanExecuteChangedFor(nameof(RegisterCommand))]
+        public partial bool IsBusy { get; set; }
+
+        public string RegisterButtonText
         {
-            get => _username;
-            set => SetProperty(ref _username, value);
-        }
-
-        public string Email
-        {
-            get => _email;
-            set => SetProperty(ref _email, value);
-        }
-
-        public string Password
-        {
-            get => _password;
-            set => SetProperty(ref _password, value);
-        }
-
-        public string RoleName
-        {
-            get => _roleName;
-            set => SetProperty(ref _roleName, value);
-        }
-
-        public bool IsPassword
-        {
-            get => _isPassword;
-            set => SetProperty(ref _isPassword, value);
-        }
-
-        public bool IsBusy
-        {
-            get => _isBusy;
-            set
+            get
             {
-                if (SetProperty(ref _isBusy, value))
+                if (IsBusy)
                 {
-                    RegisterCommand.ChangeCanExecute();
-                    OnPropertyChanged(nameof(RegisterButtonText));
+                    return "Registrando...";
                 }
+
+                return "Registrarse";
             }
         }
 
-        public string RegisterButtonText => IsBusy ? "Registrando..." : "Registrarse";
-
-        public Command RegisterCommand { get; }
-        public Command TogglePasswordCommand { get; }
-        public Command NavigateToLoginCommand { get; }
-
-        public RegisterViewModel(IAuthService authService, INavigationService navigationService, IDialogService dialogService)
-        {
-            _authService = authService;
-            _navigationService = navigationService;
-            _dialogService = dialogService;
-
-            RegisterCommand = new Command(async () => await RegisterAsync(), () => !IsBusy);
-            TogglePasswordCommand = new Command(() => IsPassword = !IsPassword);
-            NavigateToLoginCommand = new Command(async () => await _navigationService.GoToAsync("//login"));
-        }
-
+        [RelayCommand(CanExecute = nameof(CanRegister))]
         private async Task RegisterAsync()
         {
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(RoleName))
@@ -114,6 +83,28 @@ namespace Waybon.App.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private bool CanRegister()
+        {
+            if (!IsBusy)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        [RelayCommand]
+        private void TogglePassword()
+        {
+            IsPassword = !IsPassword;
+        }
+
+        [RelayCommand]
+        private async Task NavigateToLoginAsync()
+        {
+            await _navigationService.GoToAsync("//login");
         }
     }
 }

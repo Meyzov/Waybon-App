@@ -9,15 +9,5 @@ namespace Waybon.App.Views
             InitializeComponent();
             BindingContext = viewModel;
         }
-
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
-
-            if (BindingContext is LoadingViewModel vm)
-            {
-                await vm.InitializeAsync();
-            }
-        }
     }
 }

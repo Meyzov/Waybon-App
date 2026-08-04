@@ -1,71 +1,45 @@
-﻿using Waybon.App.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Waybon.App.Models;
 using Waybon.App.Services.Interfaces;
 
 namespace Waybon.App.ViewModels
 {
-    public partial class LoginViewModel : BaseViewModel
+    public partial class LoginViewModel(IAuthService authService, INavigationService navigationService, IPreferencesService preferencesService, IDialogService dialogService) : ObservableObject
     {
-        private readonly IAuthService _authService;
-        private readonly INavigationService _navigationService;
-        private readonly IPreferencesService _preferencesService;
-        private readonly IDialogService _dialogService;
+        private readonly IAuthService _authService = authService;
+        private readonly INavigationService _navigationService = navigationService;
+        private readonly IPreferencesService _preferencesService = preferencesService;
+        private readonly IDialogService _dialogService = dialogService;
 
-        private string _email = string.Empty;
-        private string _password = string.Empty;
-        private bool _isPassword = true;
-        private bool _isBusy;
+        [ObservableProperty]
+        public partial string Email { get; set; } = string.Empty;
 
-        public string Email
+        [ObservableProperty]
+        public partial string Password { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial bool IsPassword { get; set; } = true;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LoginButtonText))]
+        [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+        public partial bool IsBusy { get; set; }
+
+        public string LoginButtonText
         {
-            get => _email;
-            set => SetProperty(ref _email, value);
-        }
-
-        public string Password
-        {
-            get => _password;
-            set => SetProperty(ref _password, value);
-        }
-
-        public bool IsPassword
-        {
-            get => _isPassword;
-            set => SetProperty(ref _isPassword, value);
-        }
-
-        public bool IsBusy
-        {
-            get => _isBusy;
-            set
+            get
             {
-                if (SetProperty(ref _isBusy, value))
+                if (IsBusy)
                 {
-                    LoginCommand.ChangeCanExecute();
-                    OnPropertyChanged(nameof(LoginButtonText));
+                    return "Entrando...";
                 }
+
+                return "Entrar";
             }
         }
 
-        public string LoginButtonText => IsBusy ? "Entrando..." : "Entrar";
-
-        public Command LoginCommand { get; }
-        public Command TogglePasswordCommand { get; }
-        public Command NavigateToRegisterCommand { get; }
-        public Command ForgotPasswordCommand { get; }
-
-        public LoginViewModel(IAuthService authService, INavigationService navigationService, IPreferencesService preferencesService, IDialogService dialogService)
-        {
-            _authService = authService;
-            _navigationService = navigationService;
-            _preferencesService = preferencesService;
-            _dialogService = dialogService;
-
-            LoginCommand = new Command(async () => await LoginAsync(), () => !IsBusy);
-            TogglePasswordCommand = new Command(() => IsPassword = !IsPassword);
-            NavigateToRegisterCommand = new Command(async () => await _navigationService.GoToAsync("//register"));
-            ForgotPasswordCommand = new Command(async () => await _dialogService.ShowAlertAsync("Recuperar contraseña", "Función no implementada.", "OK"));
-        }
-
+        [RelayCommand(CanExecute = nameof(CanLogin))]
         private async Task LoginAsync()
         {
             if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
@@ -78,9 +52,14 @@ namespace Waybon.App.ViewModels
 
             try
             {
-                var result = await _authService.LoginAsync(Email.Trim(), Password);
+                var request = new LoginRequest
+                {
+                    Email = Email.Trim().ToLower(),
+                    Password = Password,
+                };
 
-                if (result is null)
+                var result = await _authService.LoginAsync(request);
+                if (result == null)
                 {
                     await _dialogService.ShowAlertAsync("Error", "Credenciales inválidas.", "OK");
                     return;
@@ -97,6 +76,34 @@ namespace Waybon.App.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private bool CanLogin()
+        {
+            if (!IsBusy)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        [RelayCommand]
+        private void TogglePassword()
+        {
+            IsPassword = !IsPassword;
+        }
+
+        [RelayCommand]
+        private async Task NavigateToRegisterAsync()
+        {
+            await _navigationService.GoToAsync("//register");
+        }
+
+        [RelayCommand]
+        private async Task ForgotPasswordAsync()
+        {
+            await _dialogService.ShowAlertAsync("Recuperar contraseña", "Función no implementada.", "OK");
         }
 
         private void SaveSession(LoginResponse result)
