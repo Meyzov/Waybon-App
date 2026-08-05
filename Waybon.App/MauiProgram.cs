@@ -29,14 +29,17 @@ namespace Waybon.App
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<ISessionService, SessionService>();
+            builder.Services.AddSingleton<ISigningConfiguration, SigningConfiguration>();
 
+            builder.Services.AddTransient<SigningHandler>();
             builder.Services.AddHttpClient<IAuthService, AuthService>
             (
                 client =>
                 {
                     client.BaseAddress = new Uri("https://waybon-api.onrender.com/");
                 }
-            );
+            )
+            .AddHttpMessageHandler<SigningHandler>();
 
             builder.Services.AddHttpClient<IGroupService, GroupService>
             (
@@ -44,7 +47,8 @@ namespace Waybon.App
                 {
                     client.BaseAddress = new Uri("https://waybon-api.onrender.com/");
                 }
-            );
+            )
+            .AddHttpMessageHandler<SigningHandler>();
 
             // --- ViewModels ---
             builder.Services.AddTransient<LoadingViewModel>();
@@ -55,7 +59,7 @@ namespace Waybon.App
             builder.Services.AddTransient<MainViewModel>();
             
 
-            // --- Vistas ---
+            // --- Views ---
             builder.Services.AddTransient<LoadingPage>();
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<RegisterPage>();
