@@ -127,13 +127,12 @@
 
 	<Target Name="InjectPrivateKey" BeforeTargets="CoreCompile" Condition="Exists('$(MSBuildThisFileDirectory)Keys\private.pem')">
 		<PropertyGroup>
-			<PrivKeyContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Keys\private.pem').Replace(`"`, `\"`))</PrivKeyContent>
+			<PrivKeyContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Keys\private.pem').Replace(`%0D`, ``).Replace(`%0A`, `\n`).Replace(`"`, `\"`))</PrivKeyContent>
+			<TemplateContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)SecurityConfig.cs'))</TemplateContent>
+			<FinalContent>$(TemplateContent.Replace('$PRIVATE_KEY$', '$(PrivKeyContent)'))</FinalContent>
 		</PropertyGroup>
 		<Message Text="[Security] Injecting private key from Keys/private.pem" Importance="high" />
-		<WriteLinesToFile
-	        File="$(IntermediateOutputPath)\SecurityConfig_Injected.cs"
-	        Lines="namespace Waybon.App { public static class SecurityConfig { public static string PrivateKeyPem { get; private set; } = &quot;$(PrivKeyContent)&quot;; } }"
-	        Overwrite="true" />
+		<WriteLinesToFile File="$(IntermediateOutputPath)\SecurityConfig_Injected.cs" Lines="$(FinalContent)" Overwrite="true" Encoding="UTF-8" />
 		<ItemGroup>
 			<Compile Remove="SecurityConfig.cs" />
 			<Compile Include="$(IntermediateOutputPath)\SecurityConfig_Injected.cs" />
