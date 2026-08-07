@@ -22,5 +22,20 @@ namespace Waybon.App.Services.Implementations
 
             return await response.Content.ReadFromJsonAsync<List<GroupDetails>>() ?? [];
         }
+
+        public async Task<IEnumerable<GroupMember>> GetGroupMembersAsync(int groupId, SessionIdRequest request)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                $"api/groups/{groupId}/get-members", request
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return [];
+            }
+
+            return await response.Content.ReadFromJsonAsync<List<GroupMember>>() ?? [];
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Waybon.App.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Waybon.App.Models
 {
     public class GroupDetails
     {
@@ -9,5 +11,8 @@
         public string? JoinCode { get; set; }
         public DateTime? JoinCodeExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        [JsonIgnore]
+        public string DisplayUsername { get; set; } = string.Empty;
     }
 }

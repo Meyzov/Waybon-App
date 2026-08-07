@@ -11,6 +11,14 @@
     BackgroundColor="{StaticResource Stone100}"
     Shell.NavBarIsVisible="False">
 
+    <!-- Resources -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <!-- Page Load Trigger -->
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
             EventName="Appearing"
@@ -18,12 +26,13 @@
             BindingContext="{Binding Source={x:Reference Main}, Path=BindingContext}" />
     </ContentPage.Behaviors>
 
+    <!-- Root Layout -->
     <Grid RowDefinitions="*,Auto">
 
         <!-- Content Panels -->
         <Grid Grid.Row="0" RowDefinitions="Auto,*">
 
-            <!-- Ads Banner -->
+            <!-- Ad Banner -->
             <Border
                 Grid.Row="0"
                 IsVisible="{Binding IsMapVisible}"
@@ -38,13 +47,14 @@
                     Text="Publicidad"
                     FontFamily="PTSerifRegular"
                     FontSize="16"
+                    FontAttributes="Bold"
                     TextColor="{StaticResource Stone500}"
                     BackgroundColor="Transparent"
                     HorizontalOptions="Center"
                     VerticalOptions="Center"/>
             </Border>
 
-            <!-- Map Panel -->
+            <!-- Map Container -->
             <Border
                 Grid.Row="1"
                 IsVisible="{Binding IsMapVisible}"
@@ -59,54 +69,68 @@
                     HorizontalOptions="Fill"/>
             </Border>
 
-            <!-- Groups Panel -->
-            <Border
+            <!-- Groups Module -->
+            <Grid
                 Grid.Row="0"
                 Grid.RowSpan="2"
                 IsVisible="{Binding IsGroupsVisible}"
-                BackgroundColor="{StaticResource White}"
-                Stroke="{StaticResource Stone300}"
-                StrokeThickness="1"
-                Margin="16,16,16,8"
-                Padding="32">
+                Margin="16,16,16,8">
 
-                <Grid RowDefinitions="Auto,Auto,*">
-                    <Label
-                        Grid.Row="0"
-                        Text="Mis Grupos"
-                        FontFamily="PTSerifRegular"
-                        FontSize="30"
-                        TextColor="{StaticResource Stone800}"
-                        HorizontalOptions="Center"
-                        Margin="0,0,0,8"/>
+                <!-- Groups List -->
+                <Border
+                    IsVisible="{Binding Group.IsGroupSelected, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="{StaticResource White}"
+                    Stroke="{StaticResource Stone300}"
+                    StrokeThickness="1"
+                    Padding="24">
 
-                    <BoxView
-                        Grid.Row="1"
-                        HeightRequest="1"
-                        Color="{StaticResource Stone300}"
-                        Margin="0,0,0,24"/>
+                    <Grid RowDefinitions="Auto,Auto,*">
+                        <!-- Groups Header -->
+                        <VerticalStackLayout Grid.Row="0" Spacing="0">
+                            <Border
+                                BackgroundColor="{StaticResource Stone800}"
+                                Stroke="{StaticResource Stone800}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                Padding="1"
+                                Margin="0,0,0,16">
 
-                    <Grid Grid.Row="2" BindingContext="{Binding Group}" x:DataType="vm:GroupViewModel">
+                                <Label
+                                    Text="Mis Grupos"
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="30"
+                                    BackgroundColor="{StaticResource Stone800}"
+                                    TextColor="{StaticResource White}"
+                                    HorizontalOptions="Center"
+                                    Margin="8,8,8,8"/>
+                            </Border>
+                        </VerticalStackLayout>
 
-                        <Label
-                            IsVisible="{Binding IsLoading}"
-                            Text="Cargando grupos..."
-                            FontFamily="PTSerifRegular"
-                            FontSize="16"
-                            TextColor="{StaticResource Stone500}"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"/>
+                        <!-- Groups Content -->
+                        <Grid Grid.Row="2" BindingContext="{Binding Group}" x:DataType="vm:GroupViewModel">
+                            <Grid RowDefinitions="*">
+                                <!-- Loading State -->
+                                <Label
+                                    Text="Cargando grupos..."
+                                    IsVisible="{Binding ShowIsLoadingGroups}"
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="16"
+                                    TextColor="{StaticResource Stone500}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
 
-                        <ScrollView VerticalScrollBarVisibility="Always" IsVisible="{Binding HasGroups}">
-                            <VerticalStackLayout Spacing="0">
-                                <CollectionView
-                                    ItemsSource="{Binding Groups}">
+                                <!-- Groups Collection -->
+                                <CollectionView 
+                                    ItemsSource="{Binding JoinedGroups}" 
+                                    IsVisible="{Binding ShowGroups}">
+
                                     <CollectionView.ItemsLayout>
                                         <GridItemsLayout
                                             Orientation="Vertical"
                                             Span="1"
                                             VerticalItemSpacing="16"/>
                                     </CollectionView.ItemsLayout>
+
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate x:DataType="models:GroupDetails">
                                             <Border
@@ -115,63 +139,293 @@
                                                 StrokeThickness="1"
                                                 StrokeShape="Rectangle"
                                                 Padding="16">
+
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupViewModel}}, Path=SelectGroupCommand}" CommandParameter="{Binding .}"/>
+                                                </Border.GestureRecognizers>
+
                                                 <VerticalStackLayout Spacing="0">
-                                                    <Label
-                                                        Text="{Binding Name}"
-                                                        FontFamily="PTSerifRegular"
-                                                        FontSize="18"
-                                                        TextColor="{StaticResource Stone800}"
-                                                        FontAttributes="Bold"
-                                                        Margin="0,0,0,12"/>
+                                                    <!-- Group Icon + Name + Chevron -->
+                                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                                        <!-- Icon -->
+                                                        <Border
+                                                            Grid.Column="0"
+                                                            WidthRequest="50"
+                                                            HeightRequest="50"
+                                                            BackgroundColor="{StaticResource Stone200}"
+                                                            Stroke="{StaticResource Stone300}"
+                                                            StrokeThickness="1"
+                                                            StrokeShape="Rectangle"
+                                                            HorizontalOptions="Start"
+                                                            VerticalOptions="Center">
+
+                                                            <Path
+                                                                Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                                                                Fill="{StaticResource Stone400}"
+                                                                Aspect="Uniform"
+                                                                HeightRequest="30"
+                                                                WidthRequest="30"
+                                                                HorizontalOptions="Center"
+                                                                VerticalOptions="Center"/>
+                                                        </Border>
+
+                                                        <!-- Name -->
+                                                        <Label
+                                                            Grid.Column="1"
+                                                            Text="{Binding Name}"
+                                                            FontFamily="PTSerifRegular"
+                                                            FontSize="16"
+                                                            TextColor="{StaticResource Stone700}"
+                                                            FontAttributes="Bold"
+                                                            VerticalOptions="Center"
+                                                            Margin="8,0,0,0"/>
+
+                                                        <!-- Chevron -->
+                                                        <Path
+                                                            Grid.Column="2"
+                                                            Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"
+                                                            Fill="{StaticResource Stone400}"
+                                                            Aspect="Uniform"
+                                                            HeightRequest="16"
+                                                            WidthRequest="15"
+                                                            VerticalOptions="Center"
+                                                            HorizontalOptions="End"/>
+                                                    </Grid>
+
                                                     <BoxView
                                                         HeightRequest="1"
                                                         Color="{StaticResource Stone300}"
-                                                        Margin="0,0,0,12"/>
+                                                        Margin="0,12,0,12"/>
+
+                                                    <!-- Group Owner -->
+                                                    <Border
+                                                        BackgroundColor="{StaticResource White}"
+                                                        Stroke="{StaticResource Stone300}"
+                                                        StrokeThickness="1"
+                                                        StrokeShape="Rectangle"
+                                                        Padding="8,4"
+                                                        Margin="0,0,0,12"
+                                                        HorizontalOptions="Start">
+
+                                                        <Label
+                                                            Text="{Binding DisplayUsername, StringFormat='Propietario: {0}'}"
+                                                            FontFamily="PTSerifRegular"
+                                                            FontSize="11"
+                                                            TextColor="{StaticResource Stone500}"
+                                                            LineBreakMode="NoWrap"/>
+                                                    </Border>
+
+                                                    <!-- Created Date -->
+                                                    <Label
+                                                        Text="{Binding CreatedAt, StringFormat='Creado: {0:dd/MM/yyyy}'}"
+                                                        FontFamily="PTSerifRegular"
+                                                        FontSize="11"
+                                                        TextColor="{StaticResource Stone500}"
+                                                        HorizontalOptions="End"/>
+                                                </VerticalStackLayout>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+
+                                <!-- Empty State -->
+                                <Label
+                                    IsVisible="{Binding ShowIsGroupsEmpty}"
+                                    Text="No se encontraron grupos."
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="16"
+                                    TextColor="{StaticResource Stone500}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"/>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Group Members List -->
+                <Border
+                    IsVisible="{Binding Group.IsGroupSelected}"
+                    BackgroundColor="{StaticResource White}"
+                    Stroke="{StaticResource Stone300}"
+                    StrokeThickness="1"
+                    Padding="24">
+
+                    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" BindingContext="{Binding Group}" x:DataType="vm:GroupViewModel">
+
+                        <!-- Members Header -->
+                        <VerticalStackLayout Grid.Row="0" Spacing="0">
+                            <Border
+                                BackgroundColor="{StaticResource Stone800}"
+                                Stroke="{StaticResource Stone800}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                Padding="1"
+                                Margin="0,0,0,16">
+
+                                <Label
+                                    Text="{Binding SelectedGroupName}"
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="30"
+                                    BackgroundColor="{StaticResource Stone800}"
+                                    TextColor="{StaticResource White}"
+                                    HorizontalOptions="Center"
+                                    Margin="0,8,0,8"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Members Content -->
+                        <Grid Grid.Row="2" Margin="0,0,0,24">
+                            <Grid RowDefinitions="*">
+                                <!-- Loading State -->
+                                <Label
+                                    Text="Cargando miembros..."
+                                    IsVisible="{Binding ShowIsLoadingMembers}"
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="16"
+                                    TextColor="{StaticResource Stone500}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+
+                                <!-- Members Collection -->
+                                <CollectionView 
+                                    ItemsSource="{Binding GroupMembers}" 
+                                    IsVisible="{Binding ShowMembers}">
+
+                                    <CollectionView.ItemsLayout>
+                                        <GridItemsLayout
+                                            Orientation="Vertical"
+                                            Span="1"
+                                            VerticalItemSpacing="16"/>
+                                    </CollectionView.ItemsLayout>
+
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:GroupMember">
+                                            <Border
+                                                BackgroundColor="#FAFAF9"
+                                                Stroke="{StaticResource Stone300}"
+                                                StrokeThickness="1"
+                                                StrokeShape="Rectangle"
+                                                Padding="16">
+
+                                                <VerticalStackLayout Spacing="0">
+                                                    <!-- Member Icon + Name -->
+                                                    <HorizontalStackLayout Spacing="8">
+                                                        <Border
+                                                            WidthRequest="50"
+                                                            HeightRequest="50"
+                                                            BackgroundColor="{StaticResource Stone200}"
+                                                            Stroke="{StaticResource Stone300}"
+                                                            StrokeThickness="1"
+                                                            StrokeShape="Rectangle"
+                                                            HorizontalOptions="Start"
+                                                            VerticalOptions="Center">
+
+                                                            <Path
+                                                                Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                                Fill="{StaticResource Stone400}"
+                                                                Aspect="Uniform"
+                                                                HeightRequest="24"
+                                                                WidthRequest="20"
+                                                                HorizontalOptions="Center"
+                                                                VerticalOptions="Center"/>
+                                                        </Border>
+
+                                                        <Label
+                                                            Text="{Binding DisplayUsername}"
+                                                            FontFamily="PTSerifRegular"
+                                                            FontSize="16"
+                                                            TextColor="{StaticResource Stone700}"
+                                                            FontAttributes="Bold"
+                                                            VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+
+                                                    <BoxView
+                                                        HeightRequest="1"
+                                                        Color="{StaticResource Stone300}"
+                                                        Margin="0,12,0,12"/>
+
+                                                    <!-- Member Details -->
                                                     <VerticalStackLayout Spacing="4">
-                                                        <HorizontalStackLayout Spacing="4">
-                                                            <Label
-                                                                Text="Propietario:"
-                                                                FontFamily="PTSerifRegular"
-                                                                FontSize="13"
-                                                                TextColor="{StaticResource Stone500}"/>
-                                                            <Label
-                                                                Text="{Binding Username}"
-                                                                FontFamily="PTSerifRegular"
-                                                                FontSize="13"
-                                                                TextColor="{StaticResource Stone600}"/>
-                                                        </HorizontalStackLayout>
-                                                        <HorizontalStackLayout Spacing="4">
-                                                            <Label
-                                                                Text="Creado:"
-                                                                FontFamily="PTSerifRegular"
-                                                                FontSize="13"
-                                                                TextColor="{StaticResource Stone500}"/>
-                                                            <Label
-                                                                Text="{Binding CreatedAt, StringFormat='{0:dd/MM/yyyy}'}"
-                                                                FontFamily="PTSerifRegular"
-                                                                FontSize="13"
-                                                                TextColor="{StaticResource Stone600}"/>
-                                                        </HorizontalStackLayout>
+                                                        <!-- Tags -->
+                                                        <FlexLayout
+                                                            Direction="Row"
+                                                            Wrap="Wrap"
+                                                            AlignItems="Start"
+                                                            JustifyContent="Start"
+                                                            Margin="0,0,0,8"
+                                                            BindableLayout.ItemsSource="{Binding Tags}">
+                                                            <BindableLayout.ItemTemplate>
+                                                                <DataTemplate x:DataType="x:String">
+                                                                    <Border
+                                                                        BackgroundColor="{StaticResource White}"
+                                                                        Stroke="{StaticResource Stone300}"
+                                                                        StrokeThickness="1"
+                                                                        StrokeShape="Rectangle"
+                                                                        Padding="8,4"
+                                                                        Margin="0,0,8,8">
+                                                                        <Label
+                                                                            Text="{Binding .}"
+                                                                            FontFamily="PTSerifRegular"
+                                                                            FontSize="11"
+                                                                            TextColor="{StaticResource Stone500}"
+                                                                            LineBreakMode="NoWrap"/>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </BindableLayout.ItemTemplate>
+                                                        </FlexLayout>
+
+                                                        <!-- Last Activity -->
+                                                        <Label
+                                                            Text="{Binding LastActivityAt, StringFormat='Última actividad: {0:dd/MM/yyy - HH:mm}'}"
+                                                            FontFamily="PTSerifRegular"
+                                                            FontSize="11"
+                                                            TextColor="{StaticResource Stone500}"
+                                                            HorizontalOptions="End"
+                                                            Margin="0,0,2,0"/>
                                                     </VerticalStackLayout>
                                                 </VerticalStackLayout>
                                             </Border>
                                         </DataTemplate>
                                     </CollectionView.ItemTemplate>
                                 </CollectionView>
-                            </VerticalStackLayout>
-                        </ScrollView>
 
-                        <Label
-                            IsVisible="{Binding IsEmpty}"
-                            Text="No se encontraron grupos."
+                                <!-- Empty State -->
+                                <Label
+                                    IsVisible="{Binding ShowIsMembersEmpty}"
+                                    Text="No se encontraron miembros en este grupo."
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="16"
+                                    TextColor="{StaticResource Stone500}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"/>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Bottom Separator -->
+                        <BoxView
+                            Grid.Row="3"
+                            HeightRequest="1"
+                            Color="{StaticResource Stone300}"
+                            Margin="0,0,0,16"/>
+
+                        <!-- Back Button -->
+                        <Button
+                            Grid.Row="4"
+                            Text="Volver a mis grupos"
                             FontFamily="PTSerifRegular"
                             FontSize="16"
-                            TextColor="{StaticResource Stone500}"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"/>
+                            BackgroundColor="{StaticResource Stone800}"
+                            TextColor="{StaticResource White}"
+                            BorderColor="{StaticResource Stone800}"
+                            BorderWidth="1"
+                            CornerRadius="0"
+                            HeightRequest="40"
+                            Command="{Binding BackToGroupsCommand}"/>
+
                     </Grid>
-                </Grid>
-            </Border>
+                </Border>
+
+            </Grid>
 
             <!-- Profile Panel -->
             <Border
@@ -182,24 +436,33 @@
                 Stroke="{StaticResource Stone300}"
                 StrokeThickness="1"
                 Margin="16,16,16,8"
-                Padding="32">
+                Padding="24">
 
                 <Grid RowDefinitions="*,Auto" BindingContext="{Binding Profile}" x:DataType="vm:ProfileViewModel">
 
-                    <!-- Scrollable Content -->
+                    <!-- Profile Content -->
                     <ScrollView Grid.Row="0">
                         <VerticalStackLayout Spacing="0">
-                            <Label
-                                Text="Panel de Usuario"
-                                FontFamily="PTSerifRegular"
-                                FontSize="30"
-                                TextColor="{StaticResource Stone800}"
-                                HorizontalOptions="Center"
-                                Margin="0,0,0,8"/>
+                            <!-- Profile Header -->
+                            <Border
+                                BackgroundColor="{StaticResource Stone800}"
+                                Stroke="{StaticResource Stone800}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                Padding="1"
+                                Margin="0,0,0,16">
 
-                            <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,32"/>
+                                <Label
+                                    Text="Panel de Usuario"
+                                    FontFamily="PTSerifRegular"
+                                    FontSize="30"
+                                    BackgroundColor="{StaticResource Stone800}"
+                                    TextColor="{StaticResource White}"
+                                    HorizontalOptions="Center"
+                                    Margin="0,8,0,8"/>
+                            </Border>
 
-                            <!-- User Info Card -->
+                            <!-- User Card -->
                             <Border
                                 BackgroundColor="#FAFAF9"
                                 Stroke="{StaticResource Stone200}"
@@ -209,8 +472,8 @@
                                 Margin="0,0,0,32">
                                 <HorizontalStackLayout Spacing="24" VerticalOptions="Center">
                                     <Border
-                                        WidthRequest="80"
-                                        HeightRequest="80"
+                                        WidthRequest="70"
+                                        HeightRequest="70"
                                         BackgroundColor="{StaticResource Stone200}"
                                         Stroke="{StaticResource Stone300}"
                                         StrokeThickness="1"
@@ -218,10 +481,10 @@
                                         HorizontalOptions="Start"
                                         VerticalOptions="Center">
                                         <Path
-                                            Data="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
                                             Fill="{StaticResource Stone400}"
                                             Aspect="Uniform"
-                                            HeightRequest="40"
+                                            HeightRequest="32"
                                             WidthRequest="40"
                                             HorizontalOptions="Center"
                                             VerticalOptions="Center"/>
@@ -245,7 +508,7 @@
                         </VerticalStackLayout>
                     </ScrollView>
 
-                    <!-- Fixed Bottom Action -->
+                    <!-- Logout Section -->
                     <VerticalStackLayout Grid.Row="1" Spacing="0">
                         <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,16"/>
                         <Button
@@ -316,12 +579,13 @@
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
                             Spacing="2">
+                            <!-- More complex users icon -->
                             <Path
-                                Data="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
                                 Fill="{Binding GroupsButtonTextColor}"
                                 Aspect="Uniform"
                                 HeightRequest="24"
-                                WidthRequest="24"/>
+                                WidthRequest="38"/>
                             <Label
                                 Text="Grupos"
                                 FontFamily="PTSerifRegular"
@@ -343,7 +607,7 @@
                             VerticalOptions="Center"
                             Spacing="2">
                             <Path
-                                Data="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
                                 Fill="{Binding ProfileButtonTextColor}"
                                 Aspect="Uniform"
                                 HeightRequest="24"
@@ -360,6 +624,5 @@
                 </Grid>
             </Border>
         </Grid>
-
     </Grid>
 </ContentPage>
