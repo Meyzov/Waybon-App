@@ -40,6 +40,7 @@ namespace Waybon.App
             builder.Services.AddSingleton<ISigningConfiguration, SigningConfiguration>();
 
             builder.Services.AddTransient<SigningHandler>();
+
             builder.Services.AddHttpClient<IAuthService, AuthService>
             (
                 client =>
@@ -50,6 +51,15 @@ namespace Waybon.App
             .AddHttpMessageHandler<SigningHandler>();
 
             builder.Services.AddHttpClient<IGroupService, GroupService>
+            (
+                client =>
+                {
+                    client.BaseAddress = new Uri("https://waybon-api.onrender.com/");
+                }
+            )
+            .AddHttpMessageHandler<SigningHandler>();
+
+            builder.Services.AddHttpClient<IUserService, UserService>
             (
                 client =>
                 {

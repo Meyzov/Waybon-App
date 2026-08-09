@@ -137,8 +137,9 @@ namespace Waybon.App.ViewModels
 
         public async Task LoadCachedGroupsAsync()
         {
-            var cts = new CancellationTokenSource();
             _groupLoadCts?.Cancel();
+
+            var cts = new CancellationTokenSource();
             _groupLoadCts = cts;
 
             IsGroupsLoading = true;
@@ -167,7 +168,7 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                JoinedGroups = groups;
+                JoinedGroups = groups.OrderBy(g => g.Name);
             }
             catch (OperationCanceledException)
             {
@@ -184,13 +185,16 @@ namespace Waybon.App.ViewModels
                     IsGroupsLoading = false;
                     _groupLoadCts = null;
                 }
+
+                cts.Dispose();
             }
         }
 
         public async Task RefreshGroupsAsync()
         {
-            var cts = new CancellationTokenSource();
             _groupLoadCts?.Cancel();
+
+            var cts = new CancellationTokenSource();
             _groupLoadCts = cts;
 
             IsGroupsLoading = true;
@@ -229,7 +233,7 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                JoinedGroups = groups;
+                JoinedGroups = groups.OrderBy(g => g.Name);
                 await _groupRepository.SaveGroupsAsync(MapToLocalGroups(groups));
             }
             catch (OperationCanceledException)
@@ -247,6 +251,8 @@ namespace Waybon.App.ViewModels
                     IsGroupsLoading = false;
                     _groupLoadCts = null;
                 }
+
+                cts.Dispose();
             }
         }
 
@@ -257,8 +263,9 @@ namespace Waybon.App.ViewModels
 
         public async Task LoadCachedMembersAsync(int selectedGroupId, Guid selectedGroupOwnerId)
         {
-            var cts = new CancellationTokenSource();
             _memberLoadCts?.Cancel();
+
+            var cts = new CancellationTokenSource();
             _memberLoadCts = cts;
 
             IsMembersLoading = true;
@@ -287,7 +294,7 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                GroupMembers = members;
+                GroupMembers = members.OrderBy(m => m.Username);
             }
             catch (OperationCanceledException)
             {
@@ -304,13 +311,16 @@ namespace Waybon.App.ViewModels
                     IsMembersLoading = false;
                     _memberLoadCts = null;
                 }
+
+                cts.Dispose();
             }
         }
 
         public async Task RefreshMembersAsync(int selectedGroupId, Guid selectedGroupOwnerId)
         {
-            var cts = new CancellationTokenSource();
             _memberLoadCts?.Cancel();
+
+            var cts = new CancellationTokenSource();
             _memberLoadCts = cts;
 
             IsMembersLoading = true;
@@ -347,7 +357,7 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                GroupMembers = members;
+                GroupMembers = members.OrderBy(m => m.Username);
                 await _groupMemberRepository.SaveMembersAsync(selectedGroupId, MapToLocalMembers(selectedGroupId, members));
             }
             catch (OperationCanceledException)
@@ -365,6 +375,8 @@ namespace Waybon.App.ViewModels
                     IsMembersLoading = false;
                     _memberLoadCts = null;
                 }
+
+                cts.Dispose();
             }
         }
 
@@ -424,6 +436,10 @@ namespace Waybon.App.ViewModels
             if (member.SharingEnabled)
             {
                 member.Tags.Add("Compartiendo");
+            }
+            else
+            {
+                member.Tags.Add("No Compartiendo");
             }
 
             if (member.BlockedByMe)

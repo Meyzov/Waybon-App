@@ -44,7 +44,7 @@
                 Margin="16,16,16,8"
                 Padding="0">
                 <Label
-                    Text="Publicidad"
+                    Text="Banner"
                     FontFamily="PTSerifRegular"
                     FontSize="16"
                     FontAttributes="Bold"
@@ -82,7 +82,7 @@
                     BackgroundColor="{StaticResource White}"
                     Stroke="{StaticResource Stone300}"
                     StrokeThickness="1"
-                    Padding="24">
+                    Padding="16">
 
                     <Grid RowDefinitions="Auto,Auto,*">
                         <!-- Groups Header -->
@@ -248,7 +248,7 @@
                     BackgroundColor="{StaticResource White}"
                     Stroke="{StaticResource Stone300}"
                     StrokeThickness="1"
-                    Padding="24">
+                    Padding="16">
 
                     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" BindingContext="{Binding Group}" x:DataType="vm:GroupViewModel">
 
@@ -363,12 +363,38 @@
                                                                         StrokeShape="Rectangle"
                                                                         Padding="8,4"
                                                                         Margin="0,0,8,8">
-                                                                        <Label
-                                                                            Text="{Binding .}"
-                                                                            FontFamily="PTSerifRegular"
-                                                                            FontSize="11"
-                                                                            TextColor="{StaticResource Stone500}"
-                                                                            LineBreakMode="NoWrap"/>
+            
+                                                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                                            <!-- Indicator -->
+                                                                            <Border
+                                                                                WidthRequest="8"
+                                                                                HeightRequest="8"
+                                                                                StrokeThickness="0"
+                                                                                VerticalOptions="Center">
+                                                                                <Border.StrokeShape>
+                                                                                    <RoundRectangle CornerRadius="100"/>
+                                                                                </Border.StrokeShape>
+                                                                                <Border.Triggers>
+                                                                                    <!-- Sharing -->
+                                                                                    <DataTrigger TargetType="Border" Binding="{Binding .}" Value="Compartiendo">
+                                                                                        <Setter Property="BackgroundColor" Value="Green"/>
+                                                                                    </DataTrigger>
+                                                                                    <!-- Not Sharing -->
+                                                                                    <DataTrigger TargetType="Border" Binding="{Binding .}" Value="No Compartiendo">
+                                                                                        <Setter Property="BackgroundColor" Value="Red"/>
+                                                                                    </DataTrigger>
+                                                                                </Border.Triggers>
+                                                                            </Border>
+
+                                                                            <!-- Tag Text -->
+                                                                            <Label
+                                                                                Text="{Binding .}"
+                                                                                FontFamily="PTSerifRegular"
+                                                                                FontSize="11"
+                                                                                TextColor="{StaticResource Stone500}"
+                                                                                VerticalOptions="Center"
+                                                                                LineBreakMode="NoWrap"/>
+                                                                        </HorizontalStackLayout>
                                                                     </Border>
                                                                 </DataTemplate>
                                                             </BindableLayout.ItemTemplate>
@@ -436,81 +462,161 @@
                 Stroke="{StaticResource Stone300}"
                 StrokeThickness="1"
                 Margin="16,16,16,8"
-                Padding="24">
+                Padding="16">
 
-                <Grid RowDefinitions="*,Auto" BindingContext="{Binding Profile}" x:DataType="vm:ProfileViewModel">
+                <Grid RowDefinitions="Auto,*,Auto" BindingContext="{Binding Profile}" x:DataType="vm:ProfileViewModel">
 
-                    <!-- Profile Content -->
-                    <ScrollView Grid.Row="0">
-                        <VerticalStackLayout Spacing="0">
-                            <!-- Profile Header -->
-                            <Border
+                    <!-- Profile Content (Header + Card + Separador) -->
+                    <VerticalStackLayout Grid.Row="0" Spacing="0">
+                        <!-- Profile Header -->
+                        <Border
+                            BackgroundColor="{StaticResource Stone800}"
+                            Stroke="{StaticResource Stone800}"
+                            StrokeThickness="1"
+                            StrokeShape="Rectangle"
+                            Padding="1"
+                            Margin="0,0,0,16">
+
+                            <Label
+                                Text="Panel de Usuario"
+                                FontFamily="PTSerifRegular"
+                                FontSize="30"
                                 BackgroundColor="{StaticResource Stone800}"
-                                Stroke="{StaticResource Stone800}"
-                                StrokeThickness="1"
-                                StrokeShape="Rectangle"
-                                Padding="1"
-                                Margin="0,0,0,16">
+                                TextColor="{StaticResource White}"
+                                HorizontalOptions="Center"
+                                Margin="0,8,0,8"/>
+                        </Border>
 
-                                <Label
-                                    Text="Panel de Usuario"
-                                    FontFamily="PTSerifRegular"
-                                    FontSize="30"
-                                    BackgroundColor="{StaticResource Stone800}"
-                                    TextColor="{StaticResource White}"
-                                    HorizontalOptions="Center"
-                                    Margin="0,8,0,8"/>
-                            </Border>
+                        <!-- User Card -->
+                        <Border
+                            BackgroundColor="#FAFAF9"
+                            Stroke="{StaticResource Stone200}"
+                            StrokeThickness="1"
+                            StrokeShape="Rectangle"
+                            Padding="24"
+                            Margin="0,0,0,16">
+                            <HorizontalStackLayout Spacing="24" VerticalOptions="Center">
+                                <Border
+                                    WidthRequest="70"
+                                    HeightRequest="70"
+                                    BackgroundColor="{StaticResource Stone200}"
+                                    Stroke="{StaticResource Stone300}"
+                                    StrokeThickness="1"
+                                    StrokeShape="Rectangle"
+                                    HorizontalOptions="Start"
+                                    VerticalOptions="Center">
+                                    <Path
+                                        Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                        Fill="{StaticResource Stone400}"
+                                        Aspect="Uniform"
+                                        HeightRequest="32"
+                                        WidthRequest="40"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"/>
+                                </Border>
 
-                            <!-- User Card -->
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                    <Label
+                                        Text="{Binding Username}"
+                                        FontFamily="PTSerifRegular"
+                                        FontSize="24"
+                                        TextColor="{StaticResource Stone800}"
+                                        FontAttributes="Bold"/>
+                                    <Label
+                                        Text="{Binding RoleName}"
+                                        FontFamily="PTSerifRegular"
+                                        FontSize="16"
+                                        TextColor="{StaticResource Stone600}"/>
+                                </VerticalStackLayout>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <BoxView
+                            HeightRequest="1"
+                            Color="{StaticResource Stone300}"
+                            Margin="0,0,0,16"/>
+                    </VerticalStackLayout>
+
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Spacing="16" VerticalOptions="Start">
+
+                            <!-- Location Sharing -->
                             <Border
                                 BackgroundColor="#FAFAF9"
                                 Stroke="{StaticResource Stone200}"
                                 StrokeThickness="1"
                                 StrokeShape="Rectangle"
-                                Padding="24"
-                                Margin="0,0,0,32">
-                                <HorizontalStackLayout Spacing="24" VerticalOptions="Center">
-                                    <Border
-                                        WidthRequest="70"
-                                        HeightRequest="70"
-                                        BackgroundColor="{StaticResource Stone200}"
-                                        Stroke="{StaticResource Stone300}"
-                                        StrokeThickness="1"
-                                        StrokeShape="Rectangle"
-                                        HorizontalOptions="Start"
-                                        VerticalOptions="Center">
-                                        <Path
-                                            Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                                            Fill="{StaticResource Stone400}"
-                                            Aspect="Uniform"
-                                            HeightRequest="32"
-                                            WidthRequest="40"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center"/>
-                                    </Border>
+                                Padding="24">
 
-                                    <VerticalStackLayout VerticalOptions="Center" Spacing="4">
-                                        <Label
-                                            Text="{Binding Username}"
-                                            FontFamily="PTSerifRegular"
-                                            FontSize="24"
-                                            TextColor="{StaticResource Stone800}"
-                                            FontAttributes="Bold"/>
-                                        <Label
-                                            Text="{Binding RoleName}"
-                                            FontFamily="PTSerifRegular"
-                                            FontSize="16"
-                                            TextColor="{StaticResource Stone600}"/>
-                                    </VerticalStackLayout>
-                                </HorizontalStackLayout>
+                                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                    <Label
+                                        Grid.Column="0"
+                                        Text="Compartir ubicación"
+                                        FontFamily="PTSerifRegular"
+                                        FontSize="16"
+                                        TextColor="{StaticResource Stone600}"
+                                        VerticalOptions="Center"/>
+
+                                    <!-- Custom Square Toggle -->
+                                    <Grid
+                                        Grid.Column="1"
+                                        WidthRequest="56"
+                                        HeightRequest="32"
+                                        VerticalOptions="Center">
+
+                                        <!-- Track -->
+                                        <Border
+                                            Stroke="{StaticResource Stone400}"
+                                            StrokeThickness="1"
+                                            BackgroundColor="{StaticResource Stone200}">
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsSharingEnabled}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Stone800}"/>
+                                                </DataTrigger>
+                                            </Border.Triggers>
+
+                                            <!-- Thumb -->
+                                            <Border
+                                                WidthRequest="28"
+                                                HeightRequest="28"
+                                                BackgroundColor="{StaticResource White}"
+                                                Stroke="{StaticResource Stone400}"
+                                                StrokeThickness="1"
+                                                HorizontalOptions="Start"
+                                                VerticalOptions="Center"
+                                                Margin="1,0,0,0">
+                                                <Border.Triggers>
+                                                    <DataTrigger TargetType="Border" Binding="{Binding IsSharingEnabled}" Value="True">
+                                                        <Setter Property="HorizontalOptions" Value="End"/>
+                                                        <Setter Property="Margin" Value="0,0,1,0"/>
+                                                    </DataTrigger>
+                                                </Border.Triggers>
+                                            </Border>
+                                        </Border>
+
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding ToggleSharingCommand}"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ToggleSharingCommand}"/>
+                                    </Grid.GestureRecognizers>
+                                </Grid>
                             </Border>
+
+                            <!--
+                            <Border ...>
+                                ...
+                            </Border>
+                            -->
+
                         </VerticalStackLayout>
                     </ScrollView>
 
                     <!-- Logout Section -->
-                    <VerticalStackLayout Grid.Row="1" Spacing="0">
-                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,16"/>
+                    <VerticalStackLayout Grid.Row="2" Spacing="0">
+                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,16,0,16"/>
                         <Button
                             Text="Cerrar Sesión"
                             FontFamily="PTSerifRegular"
@@ -526,7 +632,7 @@
                 </Grid>
             </Border>
         </Grid>
-
+        
         <!-- Bottom Navigation Bar -->
         <Grid
             Grid.Row="1"
@@ -540,88 +646,87 @@
                 StrokeShape="Rectangle"
                 Padding="4">
 
-                <Grid ColumnDefinitions="*,Auto,*,Auto,*">
+                    <Grid ColumnDefinitions="*,Auto,*,Auto,*">
 
-                    <!-- Map Tab -->
-                    <Grid
+                        <!-- Map Tab -->
+                        <Grid
                         Grid.Column="0"
                         BackgroundColor="{Binding MapButtonBackground}">
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectMapCommand}"/>
-                        </Grid.GestureRecognizers>
-                        <VerticalStackLayout
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectMapCommand}"/>
+                            </Grid.GestureRecognizers>
+                            <VerticalStackLayout
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
                             Spacing="2">
-                            <Path
+                                <Path
                                 Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
                                 Fill="{Binding MapButtonTextColor}"
                                 Aspect="Uniform"
                                 HeightRequest="24"
                                 WidthRequest="24"/>
-                            <Label
+                                <Label
                                 Text="Mapa"
                                 FontFamily="PTSerifRegular"
                                 FontSize="13"
                                 TextColor="{Binding MapButtonTextColor}"
                                 HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Grid>
+                            </VerticalStackLayout>
+                        </Grid>
 
-                    <!-- Groups Tab -->
-                    <Grid
+                        <!-- Groups Tab -->
+                        <Grid
                         Grid.Column="2"
                         BackgroundColor="{Binding GroupsButtonBackground}">
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectGroupsCommand}"/>
-                        </Grid.GestureRecognizers>
-                        <VerticalStackLayout
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectGroupsCommand}"/>
+                            </Grid.GestureRecognizers>
+                            <VerticalStackLayout
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
                             Spacing="2">
-                            <!-- Groups Icon -->
-                            <Path
+                                <!-- Groups Icon -->
+                                <Path
                                 Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
                                 Fill="{Binding GroupsButtonTextColor}"
                                 Aspect="Uniform"
                                 HeightRequest="24"
                                 WidthRequest="38"/>
-                            <Label
+                                <Label
                                 Text="Grupos"
                                 FontFamily="PTSerifRegular"
                                 FontSize="13"
                                 TextColor="{Binding GroupsButtonTextColor}"
                                 HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Grid>
+                            </VerticalStackLayout>
+                        </Grid>
 
-                    <!-- Profile Tab -->
-                    <Grid
+                        <!-- Profile Tab -->
+                        <Grid
                         Grid.Column="4"
                         BackgroundColor="{Binding ProfileButtonBackground}">
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectProfileCommand}"/>
-                        </Grid.GestureRecognizers>
-                        <VerticalStackLayout
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectProfileCommand}"/>
+                            </Grid.GestureRecognizers>
+                            <VerticalStackLayout
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
                             Spacing="2">
-                            <Path
+                                <Path
                                 Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
                                 Fill="{Binding ProfileButtonTextColor}"
                                 Aspect="Uniform"
                                 HeightRequest="24"
                                 WidthRequest="24"/>
-                            <Label
+                                <Label
                                 Text="Perfil"
                                 FontFamily="PTSerifRegular"
                                 FontSize="13"
                                 TextColor="{Binding ProfileButtonTextColor}"
                                 HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
                     </Grid>
-
-                </Grid>
             </Border>
         </Grid>
     </Grid>
