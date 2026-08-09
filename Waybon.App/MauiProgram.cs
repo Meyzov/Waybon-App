@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Extensions.Logging;
+using Waybon.App.Data.Interfaces;
+using Waybon.App.Data.Repositories;
 using Waybon.App.Services.Implementations;
 using Waybon.App.Services.Interfaces;
 using Waybon.App.ViewModels;
 using Waybon.App.Views;
-using CommunityToolkit.Maui;
 
 namespace Waybon.App
 {
@@ -23,6 +25,12 @@ namespace Waybon.App
                     fonts.AddFont("PTSerif-Bold.ttf", "PTSerifBold");
                 }
             );
+
+            // --- Data ---
+            builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
+            builder.Services.AddSingleton<IGroupRepository, GroupRepository>();
+            builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
+            builder.Services.AddSingleton<ILocationRepository, LocationRepository>();
 
             // --- Singletons ---
             builder.Services.AddSingleton<IPreferencesService, PreferencesService>();

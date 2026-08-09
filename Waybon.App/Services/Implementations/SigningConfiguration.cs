@@ -4,9 +4,6 @@ namespace Waybon.App.Services.Implementations
 {
     public class SigningConfiguration : ISigningConfiguration
     {
-        public string PrivateKeyPem
-        {
-            get => SecurityConfig.PrivateKeyPem;
-        }
+        public string PrivateKeyPem => SecurityConfig.PrivateKeyPem;
     }
 }

@@ -5,6 +5,14 @@ namespace Waybon.App.ViewModels
 {
     public partial class MainViewModel(ProfileViewModel profileViewModel, GroupViewModel groupViewModel) : ObservableObject
     {
+        public ProfileViewModel Profile { get; } = profileViewModel;
+        public GroupViewModel Group { get; } = groupViewModel;
+
+
+        // ======================
+        // Properties
+        // ======================
+
         [ObservableProperty]
         public partial WebViewSource? MapSource { get; set; }
 
@@ -20,144 +28,54 @@ namespace Waybon.App.ViewModels
         [NotifyPropertyChangedFor(nameof(ProfileButtonTextColor))]
         public partial string SelectedTab { get; set; } = "Map";
 
-        public ProfileViewModel Profile { get; } = profileViewModel;
-        public GroupViewModel Group { get; } = groupViewModel;
 
-        public bool IsMapVisible
-        {
-            get
-            {
-                if (SelectedTab == "Map")
-                {
-                    return true;
-                }
+        // ======================
+        // Visibility
+        // ======================
 
-                return false;
-            }
-        }
+        public bool IsMapVisible => SelectedTab == "Map";
+        public bool IsGroupsVisible => SelectedTab == "Groups";
+        public bool IsProfileVisible => SelectedTab == "Profile";
 
-        public bool IsGroupsVisible
-        {
-            get
-            {
-                if (SelectedTab == "Groups")
-                {
-                    return true;
-                }
 
-                return false;
-            }
-        }
+        // ======================
+        // Tab Styling
+        // ======================
 
-        public bool IsProfileVisible
-        {
-            get
-            {
-                if (SelectedTab == "Profile")
-                {
-                    return true;
-                }
+        public Color MapButtonBackground => IsMapVisible ? Color.FromArgb("#292524") : Colors.Transparent;
+        public Color MapButtonTextColor => IsMapVisible ? Colors.White : Color.FromArgb("#57534E");
 
-                return false;
-            }
-        }
+        public Color GroupsButtonBackground => IsGroupsVisible ? Color.FromArgb("#292524") : Colors.Transparent;
+        public Color GroupsButtonTextColor => IsGroupsVisible ? Colors.White : Color.FromArgb("#57534E");
 
-        public Color MapButtonBackground
-        {
-            get
-            {
-                if (IsMapVisible)
-                {
-                    return Color.FromArgb("#292524");
-                }
+        public Color ProfileButtonBackground => IsProfileVisible ? Color.FromArgb("#292524") : Colors.Transparent;
+        public Color ProfileButtonTextColor => IsProfileVisible ? Colors.White : Color.FromArgb("#57534E");
 
-                return Colors.Transparent;
-            }
-        }
 
-        public Color MapButtonTextColor
-        {
-            get
-            {
-                if (IsMapVisible)
-                {
-                    return Colors.White;
-                }
-
-                return Color.FromArgb("#57534E");
-            }
-        }
-
-        public Color GroupsButtonBackground
-        {
-            get
-            {
-                if (IsGroupsVisible)
-                {
-                    return Color.FromArgb("#292524");
-                }
-
-                return Colors.Transparent;
-            }
-        }
-
-        public Color GroupsButtonTextColor
-        {
-            get
-            {
-                if (IsGroupsVisible)
-                {
-                    return Colors.White;
-                }
-
-                return Color.FromArgb("#57534E");
-            }
-        }
-
-        public Color ProfileButtonBackground
-        {
-            get
-            {
-                if (IsProfileVisible)
-                {
-                    return Color.FromArgb("#292524");
-                }
-
-                return Colors.Transparent;
-            }
-        }
-
-        public Color ProfileButtonTextColor
-        {
-            get
-            {
-                if (IsProfileVisible)
-                {
-                    return Colors.White;
-                }
-
-                return Color.FromArgb("#57534E");
-            }
-        }
+        // ======================
+        // Commands
+        // ======================
 
         [RelayCommand]
-        private void SelectMap()
-        {
-            SelectedTab = "Map";
-        }
+        private void SelectMap() => SelectedTab = "Map";
 
         [RelayCommand]
-        private async Task SelectGroupsAsync()
+        private void SelectGroups()
         {
             SelectedTab = "Groups";
-            await Group.LoadGroupsAsync();
+            _ = Group.RestoreLastStateAsync();
         }
 
         [RelayCommand]
-        private void SelectProfile()
-        {
-            SelectedTab = "Profile";
-        }
+        private void SelectProfile() => SelectedTab = "Profile";
+
+
+        // ======================
+        // Initialization
+        // ======================
+
+        [RelayCommand]
+        public async Task InitializeMainAsync() => await LoadMapAsync();
 
         public async Task LoadMapAsync()
         {
@@ -185,12 +103,6 @@ namespace Waybon.App.ViewModels
                     Html = $"<html><body style='font-family:Georgia;padding:20px;color:#78716c;'><h1>Error</h1><p>{ex.Message}</p></body></html>"
                 };
             }
-        }
-
-        [RelayCommand]
-        public async Task InitializeMainAsync()
-        {
-            await LoadMapAsync();
         }
 
         private static async Task<string> ReadResourceAsync(string filename)

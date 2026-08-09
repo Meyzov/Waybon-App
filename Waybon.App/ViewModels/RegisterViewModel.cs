@@ -11,6 +11,11 @@ namespace Waybon.App.ViewModels
         private readonly INavigationService _navigationService = navigationService;
         private readonly IDialogService _dialogService = dialogService;
 
+
+        // ======================
+        // Properties
+        // ======================
+
         [ObservableProperty]
         public partial string Username { get; set; } = string.Empty;
 
@@ -31,18 +36,12 @@ namespace Waybon.App.ViewModels
         [NotifyCanExecuteChangedFor(nameof(RegisterCommand))]
         public partial bool IsBusy { get; set; }
 
-        public string RegisterButtonText
-        {
-            get
-            {
-                if (IsBusy)
-                {
-                    return "Registrando...";
-                }
+        public string RegisterButtonText => IsBusy ? "Registrando..." : "Registrarse";
 
-                return "Registrarse";
-            }
-        }
+
+        // ======================
+        // Commands
+        // ======================
 
         [RelayCommand(CanExecute = nameof(CanRegister))]
         private async Task RegisterAsync()
@@ -85,26 +84,17 @@ namespace Waybon.App.ViewModels
             }
         }
 
-        private bool CanRegister()
-        {
-            if (!IsBusy)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        [RelayCommand]
+        private void TogglePassword() => IsPassword = !IsPassword;
 
         [RelayCommand]
-        private void TogglePassword()
-        {
-            IsPassword = !IsPassword;
-        }
+        private async Task NavigateToLoginAsync() => await _navigationService.GoToAsync("//login");
 
-        [RelayCommand]
-        private async Task NavigateToLoginAsync()
-        {
-            await _navigationService.GoToAsync("//login");
-        }
+
+        // ======================
+        // Helpers
+        // ======================
+
+        private bool CanRegister() => !IsBusy;
     }
 }

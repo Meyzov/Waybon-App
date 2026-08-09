@@ -103,11 +103,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include="SecurityConfig.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.90" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -125,6 +130,10 @@
 	  </MauiXaml>
 	</ItemGroup>
 
+	<ItemGroup>
+		<Compile Remove="SecurityConfig.cs" />
+	</ItemGroup>
+
 	<Target Name="InjectPrivateKey" BeforeTargets="CoreCompile" Condition="Exists('$(MSBuildThisFileDirectory)Keys\private.pem')">
 		<PropertyGroup>
 			<PrivKeyContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Keys\private.pem').Replace(`%0D`, ``).Replace(`%0A`, `\n`).Replace(`"`, `\"`))</PrivKeyContent>
@@ -134,7 +143,6 @@
 		<Message Text="[Security] Injecting private key from Keys/private.pem" Importance="high" />
 		<WriteLinesToFile File="$(IntermediateOutputPath)\SecurityConfig_Injected.cs" Lines="$(FinalContent)" Overwrite="true" Encoding="UTF-8" />
 		<ItemGroup>
-			<Compile Remove="SecurityConfig.cs" />
 			<Compile Include="$(IntermediateOutputPath)\SecurityConfig_Injected.cs" />
 		</ItemGroup>
 	</Target>

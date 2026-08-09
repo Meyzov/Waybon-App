@@ -1,307 +1,558 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Text.Json;
+using Waybon.App.Data.Entities;
+using Waybon.App.Data.Interfaces;
 using Waybon.App.Models;
 using Waybon.App.Services.Interfaces;
 
 namespace Waybon.App.ViewModels
 {
-    public partial class GroupViewModel(IGroupService groupService, IPreferencesService preferencesService) : ObservableObject
+    public partial class GroupViewModel(ISessionService sessionService, IGroupService groupService, IPreferencesService preferencesService, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository) : ObservableObject
     {
-        private const string GroupsKey = "waybon_groups";
+        private readonly ISessionService _sessionService = sessionService;
+        private readonly IGroupService _groupService = groupService;
+        private readonly IPreferencesService _preferencesService = preferencesService;
+        private readonly IGroupRepository _groupRepository = groupRepository;
+        private readonly IGroupMemberRepository _groupMemberRepository = groupMemberRepository;
+
         private const string SelectedGroupIdKey = "waybon_selectedGroupId";
         private const string SelectedGroupNameKey = "waybon_selectedGroupName";
         private const string SelectedGroupOwnerIdKey = "waybon_selectedGroupOwnerId";
-        private const string SessionIdKey = "waybon_sessionId";
-        private const string UserIdKey = "waybon_userId";
 
-        // --- Groups ---
+
+        // ======================
+        // Cancellation Sources
+        // ======================
+
+        private CancellationTokenSource? _groupLoadCts;
+        private CancellationTokenSource? _memberLoadCts;
+
+
+        // ======================
+        // Groups
+        // ======================
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowGroups))]
-        [NotifyPropertyChangedFor(nameof(ShowIsGroupsEmpty))]
-        [NotifyPropertyChangedFor(nameof(ShowIsLoadingGroups))]
+        [NotifyPropertyChangedFor(nameof(AreGroupsVisible))]
+        [NotifyPropertyChangedFor(nameof(IsNoGroupsMessageVisible))]
+        [NotifyPropertyChangedFor(nameof(IsGroupsLoaderVisible))]
         public partial IEnumerable<GroupDetails> JoinedGroups { get; set; } = [];
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowGroups))]
-        [NotifyPropertyChangedFor(nameof(ShowIsGroupsEmpty))]
-        [NotifyPropertyChangedFor(nameof(ShowIsLoadingGroups))]
+        [NotifyPropertyChangedFor(nameof(AreGroupsVisible))]
+        [NotifyPropertyChangedFor(nameof(IsNoGroupsMessageVisible))]
+        [NotifyPropertyChangedFor(nameof(IsGroupsLoaderVisible))]
         public partial bool IsGroupsLoading { get; set; }
 
-        private bool HasGroups => JoinedGroups.Any();
+        private bool HasAnyGroups => JoinedGroups.Any();
 
-        public bool ShowGroups => HasGroups && !IsGroupsLoading && !IsGroupSelected;
-        public bool ShowIsGroupsEmpty => !HasGroups && !IsGroupsLoading;
-        public bool ShowIsLoadingGroups => !HasGroups && IsGroupsLoading;
+        public bool AreGroupsVisible => HasAnyGroups && !IsGroupSelected;
+        public bool IsNoGroupsMessageVisible => !HasAnyGroups && !IsGroupsLoading;
+        public bool IsGroupsLoaderVisible => !HasAnyGroups && IsGroupsLoading;
 
+
+        // ======================
+        // Selected Group
+        // ======================
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowGroups))]
-        public partial bool IsGroupSelected {  get; set; }
+        [NotifyPropertyChangedFor(nameof(AreGroupsVisible))]
+        public partial bool IsGroupSelected { get; set; }
 
         [ObservableProperty]
         public partial string SelectedGroupName { get; set; } = "Mis Grupos";
 
-        public int SelectedGroupId { get; set; } = 0;
-        public Guid SelectedGroupOwnerId { get; set; } = Guid.Empty;
-        private string GroupMembersCacheKey => $"{GroupsKey}_{SelectedGroupId}";
+        public int SelectedGroupId { get; set; }
+        public Guid SelectedGroupOwnerId { get; set; }
 
-        // --- Group Members ---
+
+        // ======================
+        // Group Members
+        // ======================
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowMembers))]
-        [NotifyPropertyChangedFor(nameof(ShowIsMembersEmpty))]
-        [NotifyPropertyChangedFor(nameof(ShowIsLoadingMembers))]
+        [NotifyPropertyChangedFor(nameof(AreMembersVisible))]
+        [NotifyPropertyChangedFor(nameof(IsNoMembersMessageVisible))]
+        [NotifyPropertyChangedFor(nameof(IsMembersLoaderVisible))]
         public partial IEnumerable<GroupMember> GroupMembers { get; set; } = [];
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowMembers))]
-        [NotifyPropertyChangedFor(nameof(ShowIsMembersEmpty))]
-        [NotifyPropertyChangedFor(nameof(ShowIsLoadingMembers))]
+        [NotifyPropertyChangedFor(nameof(AreMembersVisible))]
+        [NotifyPropertyChangedFor(nameof(IsNoMembersMessageVisible))]
+        [NotifyPropertyChangedFor(nameof(IsMembersLoaderVisible))]
         public partial bool IsMembersLoading { get; set; }
 
-        private bool HasMembers => GroupMembers.Any();
+        private bool HasAnyMembers => GroupMembers.Any();
 
-        public bool ShowMembers => HasMembers && !IsMembersLoading;
-        public bool ShowIsMembersEmpty => !HasMembers && !IsMembersLoading;
-        public bool ShowIsLoadingMembers => !HasMembers && IsMembersLoading;
+        public bool AreMembersVisible => HasAnyMembers && IsGroupSelected;
+        public bool IsNoMembersMessageVisible => !HasAnyMembers && !IsMembersLoading;
+        public bool IsMembersLoaderVisible => !HasAnyMembers && IsMembersLoading;
 
-        public async Task LoadGroupsAsync()
+
+        // ======================
+        // Initialization
+        // ======================
+
+        public async Task RestoreLastStateAsync()
         {
-            IsGroupsLoading = true;
-            await RestoreLastGroupSelection();
-
-            var groupsText = preferencesService.Get(GroupsKey);
-            if (!string.IsNullOrEmpty(groupsText))
-            {
-                var cachedGroups = JsonSerializer.Deserialize<IEnumerable<GroupDetails>>(groupsText) ?? [];
-                Formatroups(cachedGroups);
-
-                JoinedGroups = cachedGroups;
-            }
-
-            if (HasGroups)
-            {
-                IsGroupsLoading = false;
-            }
-
             try
             {
-                if (!Guid.TryParse(preferencesService.Get(SessionIdKey), out Guid sessionId))
+                var savedGroupIdText = _preferencesService.Get(SelectedGroupIdKey);
+                var savedGroupName = _preferencesService.Get(SelectedGroupNameKey);
+                var savedOwnerIdText = _preferencesService.Get(SelectedGroupOwnerIdKey);
+
+                bool isValidId = int.TryParse(savedGroupIdText, out var savedGroupId);
+                bool hasName = !string.IsNullOrEmpty(savedGroupName);
+                bool isValidOwner = Guid.TryParse(savedOwnerIdText, out var savedOwnerId);
+
+                if (!isValidId || !hasName || !isValidOwner)
                 {
+                    IsGroupSelected = false;
+
+                    await LoadCachedGroupsAsync();
+                    _ = RefreshGroupsAsync();
+
                     return;
                 }
 
-                var request = new SessionIdRequest
-                {
-                    SessionId = sessionId
-                };
+                IsGroupSelected = true;
 
-                var groups = await groupService.GetJoinedGroupsAsync(request);
-                if (groups == null)
-                {
-                    JoinedGroups = [];
-                    preferencesService.Set(GroupsKey, string.Empty);
-                    return;
-                }
-                Formatroups(groups);
+                SelectedGroupId = savedGroupId;
+                SelectedGroupName = savedGroupName;
+                SelectedGroupOwnerId = savedOwnerId;
 
-                JoinedGroups = groups;
-                preferencesService.Set(GroupsKey, JsonSerializer.Serialize(groups));
+                await LoadCachedMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
+                _ = RefreshMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error restoring last state: {ex.Message}");
+            }
+        }
+
+
+        // ======================
+        // Group Loading
+        // ======================
+
+        public async Task LoadCachedGroupsAsync()
+        {
+            var cts = new CancellationTokenSource();
+            _groupLoadCts?.Cancel();
+            _groupLoadCts = cts;
+
+            IsGroupsLoading = true;
+
+            try
+            {
+                var cachedGroups = await _groupRepository.GetGroupsAsync();
+                if (cachedGroups.Count == 0)
+                {
+                    // ======================
+                    // Abort if stale
+                    // ======================
+
+                    cts.Token.ThrowIfCancellationRequested();
+
+                    JoinedGroups = [];
+                    return;
+                }
+
+                var groups = MapToGroupDetails(cachedGroups);
+                FormatGroupsForDisplay(groups);
+
+                // ======================
+                // Abort if stale
+                // ======================
+
+                cts.Token.ThrowIfCancellationRequested();
+
+                JoinedGroups = groups;
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading cached groups: {ex.Message}");
             }
             finally
             {
-                IsGroupsLoading = false;
-
-                if (IsGroupSelected && !JoinedGroups.Any(g => g.GroupId == SelectedGroupId))
+                if (_groupLoadCts == cts)
                 {
-                    BackToGroups();
+                    IsGroupsLoading = false;
+                    _groupLoadCts = null;
                 }
             }
         }
 
-        private void Formatroups(IEnumerable<GroupDetails> groups)
+        public async Task RefreshGroupsAsync()
         {
-            var currentUserId = Guid.Empty;
-            if (Guid.TryParse(preferencesService.Get(UserIdKey), out var parsedUserId))
+            var cts = new CancellationTokenSource();
+            _groupLoadCts?.Cancel();
+            _groupLoadCts = cts;
+
+            IsGroupsLoading = true;
+
+            try
             {
-                currentUserId = parsedUserId;
+                if (_sessionService.SessionId == Guid.Empty)
+                {
+                    return;
+                }
+
+                var request = new SessionIdRequest { SessionId = _sessionService.SessionId };
+                var groups = await _groupService.GetJoinedGroupsAsync(request, _groupLoadCts.Token);
+
+                if (groups == null || !groups.Any())
+                {
+                    // ======================
+                    // Abort if stale
+                    // ======================
+
+                    cts.Token.ThrowIfCancellationRequested();
+
+                    JoinedGroups = [];
+
+                    await _groupMemberRepository.ClearAllMembersAsync();
+                    await _groupRepository.ClearAllGroupsAsync();
+
+                    return;
+                }
+
+                FormatGroupsForDisplay(groups);
+
+                // ======================
+                // Abort if stale
+                // ======================
+
+                cts.Token.ThrowIfCancellationRequested();
+
+                JoinedGroups = groups;
+                await _groupRepository.SaveGroupsAsync(MapToLocalGroups(groups));
             }
+            catch (OperationCanceledException)
+            {
+                // Ignore
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading groups: {ex.Message}");
+            }
+            finally
+            {
+                if (_groupLoadCts == cts)
+                {
+                    IsGroupsLoading = false;
+                    _groupLoadCts = null;
+                }
+            }
+        }
+
+
+        // ======================
+        // Member Loading
+        // ======================
+
+        public async Task LoadCachedMembersAsync(int selectedGroupId, Guid selectedGroupOwnerId)
+        {
+            var cts = new CancellationTokenSource();
+            _memberLoadCts?.Cancel();
+            _memberLoadCts = cts;
+
+            IsMembersLoading = true;
+
+            try
+            {
+                var cachedMembers = await _groupMemberRepository.GetMembersAsync(selectedGroupId);
+                if (cachedMembers.Count == 0)
+                {
+                    // ======================
+                    // Abort if stale
+                    // ======================
+
+                    cts.Token.ThrowIfCancellationRequested();
+
+                    GroupMembers = [];
+                    return;
+                }
+                
+                var members = MapToGroupMembers(cachedMembers);
+                FormatMembersForDisplay(selectedGroupOwnerId, members);
+
+                // ======================
+                // Abort if stale
+                // ======================
+
+                cts.Token.ThrowIfCancellationRequested();
+
+                GroupMembers = members;
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading cached members: {ex.Message}");
+            }
+            finally
+            {
+                if (_memberLoadCts == cts)
+                {
+                    IsMembersLoading = false;
+                    _memberLoadCts = null;
+                }
+            }
+        }
+
+        public async Task RefreshMembersAsync(int selectedGroupId, Guid selectedGroupOwnerId)
+        {
+            var cts = new CancellationTokenSource();
+            _memberLoadCts?.Cancel();
+            _memberLoadCts = cts;
+
+            IsMembersLoading = true;
+
+            try
+            {
+                if (_sessionService.SessionId == Guid.Empty)
+                {
+                    return;
+                }
+
+                var request = new SessionIdRequest { SessionId = _sessionService.SessionId };
+                var members = await _groupService.GetGroupMembersAsync(selectedGroupId, request, _memberLoadCts.Token);
+
+                if (members == null || !members.Any())
+                {
+                    // ======================
+                    // Abort if stale
+                    // ======================
+
+                    cts.Token.ThrowIfCancellationRequested();
+
+                    GroupMembers = [];
+                    await _groupMemberRepository.ClearMembersAsync(selectedGroupId);
+
+                    return;
+                }
+
+                FormatMembersForDisplay(selectedGroupOwnerId, members);
+
+                // ======================
+                // Abort if stale
+                // ======================
+
+                cts.Token.ThrowIfCancellationRequested();
+
+                GroupMembers = members;
+                await _groupMemberRepository.SaveMembersAsync(selectedGroupId, MapToLocalMembers(selectedGroupId, members));
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading group members: {ex.Message}");
+            }
+            finally
+            {
+                if (_memberLoadCts == cts)
+                {
+                    IsMembersLoading = false;
+                    _memberLoadCts = null;
+                }
+            }
+        }
+
+
+        // ======================
+        // Display Formatting
+        // ======================
+
+        private void FormatGroupsForDisplay(IEnumerable<GroupDetails> groups)
+        {
+            var currentUserId = _sessionService.UserId;
 
             foreach (var group in groups)
             {
-                group.DisplayUsername = group.Username;
-                if (group.OwnerUserId == currentUserId)
-                {
-                    group.DisplayUsername += " (Yo)";
-                }
+                group.DisplayUsername = (group.OwnerUserId == currentUserId) ? $"{group.Username} (Yo)" : group.Username;
             }
         }
 
-        private async Task RestoreLastGroupSelection()
+        private void FormatMembersForDisplay(Guid selectedGroupOwnerId, IEnumerable<GroupMember> members)
         {
-            var selectedGroupName = preferencesService.Get(SelectedGroupNameKey);
-            if (!int.TryParse(preferencesService.Get(SelectedGroupIdKey), out var selectedGroupId) || string.IsNullOrEmpty(selectedGroupName) || !Guid.TryParse(preferencesService.Get(SelectedGroupOwnerIdKey), out var selectedGroupOwnerId))
-            {
-                IsGroupSelected = false; 
-                preferencesService.Set(SelectedGroupIdKey, string.Empty);
-                preferencesService.Set(SelectedGroupNameKey, string.Empty);
-                preferencesService.Set(SelectedGroupOwnerIdKey, string.Empty);
-                return;
-            }
-
-            IsGroupSelected = true;
-            SelectedGroupName = selectedGroupName;
-            SelectedGroupId = selectedGroupId;
-            SelectedGroupOwnerId = selectedGroupOwnerId;
-
-            await LoadGroupMembersAsync();
-        }
-
-        private async Task LoadGroupMembersAsync()
-        {
-            IsMembersLoading = true;
-
-            var groupMembersText = preferencesService.Get(GroupMembersCacheKey);
-            if (!string.IsNullOrEmpty(groupMembersText))
-            {
-                var cachedMembers = JsonSerializer.Deserialize<IEnumerable<GroupMember>>(groupMembersText) ?? [];
-                FormatMembers(cachedMembers);
-
-                GroupMembers = cachedMembers;
-            }
-
-            if (HasMembers)
-            {
-                IsMembersLoading = false;
-            }
-
-            try
-            {
-                if (!Guid.TryParse(preferencesService.Get(SessionIdKey), out Guid sessionId))
-                {
-                    return;
-                }
-
-                var request = new SessionIdRequest
-                {
-                    SessionId = sessionId
-                };
-
-                var members = await groupService.GetGroupMembersAsync(SelectedGroupId, request);
-                if (members == null)
-                {
-                    GroupMembers = [];
-                    preferencesService.Set(GroupMembersCacheKey, string.Empty);
-                    return;
-                }
-
-                FormatMembers(members);
-
-                GroupMembers = members;
-                preferencesService.Set(GroupMembersCacheKey, JsonSerializer.Serialize(members));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
-            }
-            finally
-            {
-                IsMembersLoading = false;
-            }
-        }
-
-        private void FormatMembers(IEnumerable<GroupMember> members)
-        {
-            var currentUserId = Guid.Empty;
-            if (Guid.TryParse(preferencesService.Get(UserIdKey), out var parsedUserId))
-            {
-                currentUserId = parsedUserId;
-            }
+            var currentUserId = _sessionService.UserId;
 
             foreach (var member in members)
             {
-                member.DisplayUsername = member.Username;
-                if (member.UserId == currentUserId && member.UserId == SelectedGroupOwnerId)
-                {
-                    member.DisplayUsername += " (Yo, Dueño)";
-                }
-                else if (member.UserId == SelectedGroupOwnerId)
-                {
-                    member.DisplayUsername += " (Dueño)";
-                }
-                else if (member.UserId == currentUserId)
-                {
-                    member.DisplayUsername += " (Yo)";
-                }
-
-                if (member.LastActivityAt.HasValue)
-                {
-                    member.LastActivityText = member.LastActivityAt.Value.ToString("dd/MM/yyyy - HH:mm");
-                }
-                else
-                {
-                    member.LastActivityText = "No Disponible";
-                }
-
-                if (member.Latitude.HasValue && member.Longitude.HasValue)
-                {
-                    member.LocationText = $"Lat: {member.Latitude.Value:0.00}, Lon: {member.Longitude.Value:0.00}";
-                }
-                else
-                {
-                    member.LocationText = "No Disponible";
-                }
-
-                if (member.SharingEnabled)
-                {
-                    member.Tags.Add("Compartiendo");
-                }
-
-                if (member.BlockedByMe)
-                {
-                    member.Tags.Add("Bloqueado");
-                }
-
-                if (member.BlockingMe)
-                {
-                    member.Tags.Add("Te bloqueó");
-                }
+                member.DisplayUsername = BuildMemberDisplayName(currentUserId, selectedGroupOwnerId, member);
+                BuildMemberTags(member);
             }
         }
+
+        private static string BuildMemberDisplayName(Guid currentUserId, Guid selectedGroupOwnerId, GroupMember member)
+        {
+            var isCurrentUser = member.UserId == currentUserId;
+            var isOwner = member.UserId == selectedGroupOwnerId;
+
+            if (isCurrentUser && isOwner)
+            {
+                return $"{member.Username} (Yo, Dueño)";
+            }
+
+            if (isOwner)
+            {
+                return $"{member.Username} (Dueño)";
+            }
+
+            if (isCurrentUser)
+            {
+                return $"{member.Username} (Yo)";
+            }
+
+            return member.Username;
+        }
+
+        private static void BuildMemberTags(GroupMember member)
+        {
+            member.Tags.Clear();
+
+            if (member.SharingEnabled)
+            {
+                member.Tags.Add("Compartiendo");
+            }
+
+            if (member.BlockedByMe)
+            {
+                member.Tags.Add("Bloqueado");
+            }
+
+            if (member.BlockingMe)
+            {
+                member.Tags.Add("Te bloqueó");
+            }
+        }
+
+
+        // ======================
+        // Commands
+        // ======================
 
         [RelayCommand]
         private async Task SelectGroupAsync(GroupDetails group)
         {
-            IsGroupSelected = true;
+            GroupMembers = [];
+
             SelectedGroupId = group.GroupId;
             SelectedGroupName = group.Name;
             SelectedGroupOwnerId = group.OwnerUserId;
 
-            preferencesService.Set(SelectedGroupIdKey, SelectedGroupId.ToString());
-            preferencesService.Set(SelectedGroupNameKey, SelectedGroupName);
-            preferencesService.Set(SelectedGroupOwnerIdKey, SelectedGroupOwnerId.ToString());
+            _preferencesService.Set(SelectedGroupIdKey, group.GroupId.ToString());
+            _preferencesService.Set(SelectedGroupNameKey, group.Name);
+            _preferencesService.Set(SelectedGroupOwnerIdKey, group.OwnerUserId.ToString());
 
-            await LoadGroupMembersAsync();
+            IsGroupSelected = true;
+
+            await LoadCachedMembersAsync(group.GroupId, group.OwnerUserId);
+            _ = RefreshMembersAsync(group.GroupId, group.OwnerUserId);
         }
 
         [RelayCommand]
-        private void BackToGroups()
+        private async Task BackToGroupsAsync()
+        {
+            ClearSelectedGroupState();
+            GroupMembers = [];
+
+            await LoadCachedGroupsAsync();
+            _ = RefreshGroupsAsync();
+        }
+
+        private void ClearSelectedGroupState()
         {
             IsGroupSelected = false;
             SelectedGroupId = 0;
             SelectedGroupName = "Mis Grupos";
             SelectedGroupOwnerId = Guid.Empty;
-            GroupMembers = [];
 
-            preferencesService.Set(SelectedGroupIdKey, string.Empty);
-            preferencesService.Set(SelectedGroupNameKey, string.Empty);
-            preferencesService.Set(SelectedGroupOwnerIdKey, string.Empty);
+            _preferencesService.Set(SelectedGroupIdKey, string.Empty);
+            _preferencesService.Set(SelectedGroupNameKey, string.Empty);
+            _preferencesService.Set(SelectedGroupOwnerIdKey, string.Empty);
+        }
+
+
+        // ======================
+        // Mappers
+        // ======================
+
+        private static List<GroupDetails> MapToGroupDetails(List<LocalGroup> groups)
+        {
+            return
+            [
+                .. groups.Select(g => new GroupDetails
+                {
+                    GroupId = g.GroupId,
+                    OwnerUserId = g.OwnerUserId,
+                    Username = g.Username,
+                    Name = g.Name,
+                    JoinCode = g.JoinCode,
+                    JoinCodeExpiresAt = g.JoinCodeExpiresAt,
+                    CreatedAt = g.CreatedAt
+                })
+            ];
+        }
+
+        private static List<LocalGroup> MapToLocalGroups(IEnumerable<GroupDetails> groups)
+        {
+            return
+            [
+                .. groups.Select(g => new LocalGroup
+                {
+                    GroupId = g.GroupId,
+                    OwnerUserId = g.OwnerUserId,
+                    Username = g.Username,
+                    Name = g.Name,
+                    JoinCode = g.JoinCode,
+                    JoinCodeExpiresAt = g.JoinCodeExpiresAt,
+                    CreatedAt = g.CreatedAt
+                })
+            ];
+        }
+
+        private static List<GroupMember> MapToGroupMembers(List<LocalMember> members)
+        {
+            return
+            [
+                .. members.Select(m => new GroupMember
+                {
+                    UserId = m.UserId,
+                    Username = m.Username,
+                    SharingEnabled = m.SharingEnabled,
+                    BlockedByMe = m.BlockedByMe,
+                    BlockingMe = m.BlockingMe,
+                    LastActivityAt = m.LastActivityAt
+                })
+            ];
+        }
+
+        private static List<LocalMember> MapToLocalMembers(int groupId, IEnumerable<GroupMember> members)
+        {
+            return
+            [
+                .. members.Select(m => new LocalMember
+                {
+                    GroupId = groupId,
+                    UserId = m.UserId,
+                    Username = m.Username,
+                    SharingEnabled = m.SharingEnabled,
+                    BlockedByMe = m.BlockedByMe,
+                    BlockingMe = m.BlockingMe,
+                    LastActivityAt = m.LastActivityAt
+                })
+            ];
         }
     }
 }

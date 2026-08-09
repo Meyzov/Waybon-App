@@ -12,6 +12,11 @@ namespace Waybon.App.ViewModels
         private readonly IPreferencesService _preferencesService = preferencesService;
         private readonly IDialogService _dialogService = dialogService;
 
+
+        // ======================
+        // Properties
+        // ======================
+
         [ObservableProperty]
         public partial string Email { get; set; } = string.Empty;
 
@@ -26,18 +31,11 @@ namespace Waybon.App.ViewModels
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
         public partial bool IsBusy { get; set; }
 
-        public string LoginButtonText
-        {
-            get
-            {
-                if (IsBusy)
-                {
-                    return "Entrando...";
-                }
+        public string LoginButtonText => IsBusy ? "Entrando..." : "Entrar";
 
-                return "Entrar";
-            }
-        }
+        // ======================
+        // Commands
+        // ======================
 
         [RelayCommand(CanExecute = nameof(CanLogin))]
         private async Task LoginAsync()
@@ -78,16 +76,6 @@ namespace Waybon.App.ViewModels
             }
         }
 
-        private bool CanLogin()
-        {
-            if (!IsBusy)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         [RelayCommand]
         private void TogglePassword()
         {
@@ -105,6 +93,13 @@ namespace Waybon.App.ViewModels
         {
             await _dialogService.ShowAlertAsync("Recuperar contraseña", "Función no implementada.", "OK");
         }
+
+
+        // ======================
+        // Helpers
+        // ======================
+
+        private bool CanLogin() => !IsBusy;
 
         private void SaveSession(LoginResponse result)
         {

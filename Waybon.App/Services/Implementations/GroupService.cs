@@ -8,11 +8,11 @@ namespace Waybon.App.Services.Implementations
     {
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<IEnumerable<GroupDetails>> GetJoinedGroupsAsync(SessionIdRequest request)
+        public async Task<IEnumerable<GroupDetails>> GetJoinedGroupsAsync(SessionIdRequest request, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.PostAsJsonAsync
             (
-                "api/groups/get-joined", request
+                "api/groups/get-joined", request, cancellationToken
             );
 
             if (!response.IsSuccessStatusCode)
@@ -20,14 +20,14 @@ namespace Waybon.App.Services.Implementations
                 return [];
             }
 
-            return await response.Content.ReadFromJsonAsync<List<GroupDetails>>() ?? [];
+            return await response.Content.ReadFromJsonAsync<List<GroupDetails>>(cancellationToken) ?? [];
         }
 
-        public async Task<IEnumerable<GroupMember>> GetGroupMembersAsync(int groupId, SessionIdRequest request)
+        public async Task<IEnumerable<GroupMember>> GetGroupMembersAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.PostAsJsonAsync
             (
-                $"api/groups/{groupId}/get-members", request
+                $"api/groups/{groupId}/get-members", request, cancellationToken
             );
 
             if (!response.IsSuccessStatusCode)
@@ -35,7 +35,7 @@ namespace Waybon.App.Services.Implementations
                 return [];
             }
 
-            return await response.Content.ReadFromJsonAsync<List<GroupMember>>() ?? [];
+            return await response.Content.ReadFromJsonAsync<List<GroupMember>>(cancellationToken) ?? [];
         }
     }
 }
