@@ -116,6 +116,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\Components\BottomNavigationView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Components\GroupsSectionView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Components\ProfileSectionView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\LoadingPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -125,6 +134,9 @@
 	  <MauiXaml Update="Views\MainPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\Popups\CustomAlertPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\RegisterPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -132,6 +144,12 @@
 
 	<ItemGroup>
 		<Compile Remove="SecurityConfig.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\Popups\CustomAlertPopup.xaml.cs">
+	    <DependentUpon>CustomAlertPopup.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<Target Name="InjectPrivateKey" BeforeTargets="CoreCompile" Condition="Exists('$(MSBuildThisFileDirectory)Keys\private.pem')">

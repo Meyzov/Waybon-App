@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Waybon.App.ViewModels"
+    xmlns:models="clr-namespace:Waybon.App.Models"
+    x:Class="Waybon.App.Views.Components.GroupsSectionView"
+    x:DataType="vm:MainViewModel">
+
+    <Border
+        Style="{StaticResource CardBorder}"
+        Margin="16,16,16,16"
+        Padding="16">
+
+        <Grid
+            x:Name="GroupScope"
+            BindingContext="{Binding Group}"
+            x:DataType="vm:GroupViewModel">
+
+            <!-- Group list view -->
+            <Grid
+                IsVisible="{Binding AreGroupsVisible}"
+                RowDefinitions="Auto,Auto,*"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill">
+
+                <VerticalStackLayout
+                    Spacing="0">
+                    <Border
+                        Style="{StaticResource SectionHeaderBorder}">
+                        <Label
+                            Text="Mis Grupos"
+                            Style="{StaticResource SectionHeaderLabel}"/>
+                    </Border>
+                </VerticalStackLayout>
+
+                <Grid
+                    Grid.Row="1"
+                    ColumnDefinitions="*,*"
+                    Margin="0,0,0,16">
+                    <Button
+                        Text="Crear grupo"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="0,0,8,0"
+                        Command="{Binding ShowCreateGroupCommand}"/>
+                    <Button
+                        Grid.Column="1"
+                        Text="Unirse a grupo"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="8,0,0,0"
+                        Command="{Binding ShowJoinGroupCommand}"/>
+                </Grid>
+
+                <Grid
+                    Grid.Row="2"
+                    VerticalOptions="Fill">
+                    <Label
+                        Text="Cargando grupos..."
+                        IsVisible="{Binding IsGroupsLoaderVisible}"
+                        FontFamily="Text-Variable"
+                        FontSize="16"
+                        TextColor="{StaticResource Stone500}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+
+                    <CollectionView
+                        ItemsSource="{Binding JoinedGroups}"
+                        IsVisible="{Binding AreGroupsVisible}"
+                        VerticalOptions="Fill"
+                        VerticalScrollBarVisibility="Never">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout
+                                Orientation="Vertical"
+                                Span="1"
+                                VerticalItemSpacing="12"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate
+                                x:DataType="models:GroupDetails">
+                                <Border
+                                    BackgroundColor="{StaticResource Stone50}"
+                                    Stroke="{StaticResource Stone300}"
+                                    StrokeThickness="1"
+                                    StrokeShape="Rectangle"
+                                    Padding="16">
+
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup
+                                            x:Name="CommonStates">
+                                            <VisualState
+                                                x:Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter
+                                                        Property="BackgroundColor"
+                                                        Value="{StaticResource Stone50}"/>
+                                                    <Setter
+                                                        Property="Stroke"
+                                                        Value="{StaticResource Stone300}"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState
+                                                x:Name="Pressed">
+                                                <VisualState.Setters>
+                                                    <Setter
+                                                        Property="BackgroundColor"
+                                                        Value="{StaticResource Stone200}"/>
+                                                    <Setter
+                                                        Property="Stroke"
+                                                        Value="{StaticResource Stone800}"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupViewModel}}, Path=SelectGroupCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+
+                                    <VerticalStackLayout
+                                        Spacing="0">
+                                        <Grid
+                                            ColumnDefinitions="Auto,*,Auto">
+                                            <Border
+                                                WidthRequest="50"
+                                                HeightRequest="50"
+                                                Style="{StaticResource IconContainer}"
+                                                HorizontalOptions="Start"
+                                                VerticalOptions="Center">
+                                                <Path
+                                                    Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                                                    Fill="{StaticResource Stone400}"
+                                                    Aspect="Uniform"
+                                                    HeightRequest="30"
+                                                    WidthRequest="30"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"/>
+                                            </Border>
+                                            <Label
+                                                Grid.Column="1"
+                                                Text="{Binding Name}"
+                                                FontFamily="Text-Variable"
+                                                FontSize="16"
+                                                TextColor="{StaticResource Stone700}"
+                                                VerticalOptions="Center"
+                                                Margin="8,0,0,0"/>
+                                            <Path
+                                                Grid.Column="2"
+                                                Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"
+                                                Fill="{StaticResource Stone400}"
+                                                Aspect="Uniform"
+                                                HeightRequest="16"
+                                                WidthRequest="15"
+                                                VerticalOptions="Center"
+                                                HorizontalOptions="End"/>
+                                        </Grid>
+
+                                        <BoxView
+                                            Style="{StaticResource Divider}"
+                                            Margin="0,12,0,12"/>
+
+                                        <Border
+                                            BackgroundColor="{StaticResource White}"
+                                            Stroke="{StaticResource Stone300}"
+                                            StrokeThickness="1"
+                                            StrokeShape="Rectangle"
+                                            Padding="8,4"
+                                            Margin="0,0,0,12"
+                                            HorizontalOptions="Start">
+                                            <Label
+                                                Text="{Binding DisplayUsername, StringFormat='Propietario: {0}'}"
+                                                FontFamily="Text-Variable"
+                                                FontSize="11"
+                                                TextColor="{StaticResource Stone500}"
+                                                LineBreakMode="NoWrap"/>
+                                        </Border>
+
+                                        <Label
+                                            Text="{Binding CreatedAt, StringFormat='Creado: {0:dd/MM/yyyy}'}"
+                                            FontFamily="Text-Variable"
+                                            FontSize="11"
+                                            TextColor="{StaticResource Stone500}"
+                                            HorizontalOptions="End"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Label
+                        IsVisible="{Binding IsNoGroupsMessageVisible}"
+                        Text="No se encontraron grupos."
+                        FontFamily="Text-Variable"
+                        FontSize="16"
+                        TextColor="{StaticResource Stone500}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                </Grid>
+            </Grid>
+
+            <!-- Members view -->
+            <Grid
+                IsVisible="{Binding AreMembersVisible}"
+                RowDefinitions="Auto,Auto,*,Auto"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill">
+
+                <VerticalStackLayout
+                    Spacing="0">
+                    <Border
+                        Style="{StaticResource SectionHeaderBorder}">
+                        <Label
+                            Text="{Binding SelectedGroupName}"
+                            Style="{StaticResource SectionHeaderLabel}"/>
+                    </Border>
+                </VerticalStackLayout>
+
+                <Grid
+                    Grid.Row="1"
+                    IsVisible="{Binding IsCurrentUserOwner}"
+                    Margin="0,-4,0,8">
+                    <Border
+                        Style="{StaticResource CardBorderLight}">
+                        <Grid
+                            ColumnDefinitions="*,Auto"
+                            RowDefinitions="Auto,Auto">
+                            <Label
+                                Grid.ColumnSpan="2"
+                                Text="Código de invitación"
+                                Style="{StaticResource FormLabel}"
+                                Margin="0,0,0,12"/>
+                            <Border
+                                Grid.Row="1"
+                                BackgroundColor="{StaticResource White}"
+                                Stroke="{StaticResource Stone300}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                Padding="12,8"
+                                Margin="0,0,8,0">
+                                <Label
+                                    Text="{Binding SelectedGroupJoinCode}"
+                                    FontFamily="Text-Variable"
+                                    FontSize="14"
+                                    TextColor="{StaticResource Stone800}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"/>
+                            </Border>
+                            <Button
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="Regenerar"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding RegenerateJoinCodeCommand}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid
+                    Grid.Row="2"
+                    VerticalOptions="Fill">
+                    <Label
+                        Text="Cargando miembros..."
+                        IsVisible="{Binding IsMembersLoaderVisible}"
+                        FontFamily="Text-Variable"
+                        FontSize="16"
+                        TextColor="{StaticResource Stone500}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+
+                    <CollectionView
+                        ItemsSource="{Binding GroupMembers}"
+                        IsVisible="{Binding AreMembersVisible}"
+                        VerticalOptions="Fill"
+                        VerticalScrollBarVisibility="Never">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout
+                                Orientation="Vertical"
+                                Span="1"
+                                VerticalItemSpacing="12"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate
+                                x:DataType="models:GroupMember">
+                                <Border
+                                    Style="{StaticResource CardBorderLight}">
+                                    <VerticalStackLayout
+                                        Spacing="0">
+
+                                        <HorizontalStackLayout
+                                            Spacing="8">
+                                            <Border
+                                                WidthRequest="50"
+                                                HeightRequest="50"
+                                                Style="{StaticResource IconContainer}"
+                                                HorizontalOptions="Start"
+                                                VerticalOptions="Center">
+                                                <Path
+                                                    Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                    Fill="{StaticResource Stone400}"
+                                                    Aspect="Uniform"
+                                                    HeightRequest="24"
+                                                    WidthRequest="20"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"/>
+                                            </Border>
+                                            <Label
+                                                Text="{Binding DisplayUsername}"
+                                                FontFamily="Text-Variable"
+                                                FontSize="16"
+                                                TextColor="{StaticResource Stone700}"
+                                                VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+
+                                        <BoxView
+                                            Style="{StaticResource Divider}"
+                                            Margin="0,12,0,12"/>
+
+                                        <VerticalStackLayout
+                                            Spacing="4">
+                                            <FlexLayout
+                                                Direction="Row"
+                                                Wrap="Wrap"
+                                                AlignItems="Start"
+                                                JustifyContent="Start"
+                                                Margin="0,0,0,8"
+                                                BindableLayout.ItemsSource="{Binding Tags}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate
+                                                        x:DataType="x:String">
+                                                        <Border
+                                                            BackgroundColor="{StaticResource White}"
+                                                            Stroke="{StaticResource Stone300}"
+                                                            StrokeThickness="1"
+                                                            StrokeShape="Rectangle"
+                                                            Padding="8,4"
+                                                            Margin="0,0,8,8">
+                                                            <HorizontalStackLayout
+                                                                Spacing="6"
+                                                                VerticalOptions="Center">
+                                                                <Border
+                                                                    WidthRequest="8"
+                                                                    HeightRequest="8"
+                                                                    StrokeThickness="0"
+                                                                    VerticalOptions="Center">
+                                                                    <Border.StrokeShape>
+                                                                        <RoundRectangle
+                                                                            CornerRadius="100"/>
+                                                                    </Border.StrokeShape>
+                                                                    <Border.Triggers>
+                                                                        <DataTrigger
+                                                                            TargetType="Border"
+                                                                            Binding="{Binding .}"
+                                                                            Value="Compartiendo">
+                                                                            <Setter
+                                                                                Property="BackgroundColor"
+                                                                                Value="Green"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger
+                                                                            TargetType="Border"
+                                                                            Binding="{Binding .}"
+                                                                            Value="No Compartiendo">
+                                                                            <Setter
+                                                                                Property="BackgroundColor"
+                                                                                Value="Red"/>
+                                                                        </DataTrigger>
+                                                                    </Border.Triggers>
+                                                                </Border>
+                                                                <Label
+                                                                    Text="{Binding .}"
+                                                                    FontFamily="Text-Variable"
+                                                                    FontSize="11"
+                                                                    TextColor="{StaticResource Stone500}"
+                                                                    VerticalOptions="Center"
+                                                                    LineBreakMode="NoWrap"/>
+                                                            </HorizontalStackLayout>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </FlexLayout>
+
+                                            <Label
+                                                Text="{Binding LastActivityAt, StringFormat='Última actividad: {0:dd/MM/yyyy - HH:mm}'}"
+                                                FontFamily="Text-Variable"
+                                                FontSize="11"
+                                                TextColor="{StaticResource Stone500}"
+                                                HorizontalOptions="End"
+                                                Margin="0,0,2,0"/>
+                                        </VerticalStackLayout>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Label
+                        IsVisible="{Binding IsNoMembersMessageVisible}"
+                        Text="No se encontraron miembros en este grupo."
+                        FontFamily="Text-Variable"
+                        FontSize="16"
+                        TextColor="{StaticResource Stone500}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                </Grid>
+
+                <VerticalStackLayout
+                    Grid.Row="3"
+                    Spacing="0">
+                    <BoxView
+                        Style="{StaticResource Divider}"
+                        Margin="0,16,0,16"/>
+                    <Button
+                        Text="Volver a mis grupos"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding BackToGroupsCommand}"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Create group panel -->
+            <Grid
+                IsVisible="{Binding IsCreateGroupPanelVisible}"
+                RowDefinitions="Auto,*,Auto"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill">
+
+                <Border
+                    Style="{StaticResource SectionHeaderBorder}">
+                    <Label
+                        Text="Crear Nuevo Grupo"
+                        Style="{StaticResource SectionHeaderLabel}"/>
+                </Border>
+
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource CardBorderLight}"
+                    Padding="20"
+                    VerticalOptions="Start"
+                    Margin="0,0,0,16">
+                    <VerticalStackLayout
+                        Spacing="0">
+                        <Border
+                            WidthRequest="76"
+                            HeightRequest="76"
+                            Style="{StaticResource IconContainer}"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,16">
+                            <Path
+                                Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z M18 4v4 M16 6h4"
+                                Fill="{StaticResource Stone400}"
+                                Aspect="Uniform"
+                                HeightRequest="38"
+                                WidthRequest="38"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                        </Border>
+
+                        <BoxView
+                            Style="{StaticResource Divider}"
+                            Margin="0,0,0,16"/>
+
+                        <Label
+                            Text="Nombre del grupo"
+                            Style="{StaticResource FormLabel}"
+                            Margin="0,0,0,4"/>
+
+                        <Border
+                            Stroke="{StaticResource Stone300}"
+                            StrokeThickness="1"
+                            StrokeShape="Rectangle"
+                            BackgroundColor="{StaticResource White}"
+                            Padding="12,8">
+                            <Entry
+                                Text="{Binding NewGroupName}"
+                                Placeholder="Ej: Familia West"
+                                Style="{StaticResource FormEntry}"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Grid
+                    Grid.Row="2"
+                    ColumnDefinitions="*,16,*">
+                    <Button
+                        Text="Cancelar"
+                        Style="{StaticResource SecondaryButton}"
+                        HeightRequest="44"
+                        Command="{Binding CancelCreateGroupCommand}"/>
+                    <Button
+                        Grid.Column="2"
+                        Text="Crear"
+                        Style="{StaticResource PrimaryButton}"
+                        HeightRequest="44"
+                        Command="{Binding CreateGroupCommand}"/>
+                </Grid>
+            </Grid>
+
+            <!-- Join group panel -->
+            <Grid
+                IsVisible="{Binding IsJoinGroupPanelVisible}"
+                RowDefinitions="Auto,*,Auto"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill">
+
+                <Border
+                    Style="{StaticResource SectionHeaderBorder}">
+                    <Label
+                        Text="Unirse a un Grupo"
+                        Style="{StaticResource SectionHeaderLabel}"/>
+                </Border>
+
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource CardBorderLight}"
+                    Padding="20"
+                    VerticalOptions="Start"
+                    Margin="0,0,0,16">
+                    <VerticalStackLayout
+                        Spacing="0">
+                        <Border
+                            WidthRequest="76"
+                            HeightRequest="76"
+                            Style="{StaticResource IconContainer}"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,16">
+                            <Path
+                                Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z M15 12l4 4m0 0l-4 4m4-4H9"
+                                Fill="{StaticResource Stone400}"
+                                Aspect="Uniform"
+                                HeightRequest="38"
+                                WidthRequest="38"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                        </Border>
+
+                        <BoxView
+                            Style="{StaticResource Divider}"
+                            Margin="0,0,0,16"/>
+
+                        <Label
+                            Text="Código de invitación"
+                            Style="{StaticResource FormLabel}"
+                            Margin="0,0,0,4"/>
+
+                        <Border
+                            Stroke="{StaticResource Stone300}"
+                            StrokeThickness="1"
+                            StrokeShape="Rectangle"
+                            BackgroundColor="{StaticResource White}"
+                            Padding="12,8">
+                            <Entry
+                                Text="{Binding JoinCodeInput}"
+                                Placeholder="Ej: XYZ123"
+                                Style="{StaticResource FormEntry}"
+                                MaxLength="20"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Grid
+                    Grid.Row="2"
+                    ColumnDefinitions="*,8,*">
+                    <Button
+                        Text="Cancelar"
+                        Style="{StaticResource SecondaryButton}"
+                        HeightRequest="44"
+                        Command="{Binding CancelJoinGroupCommand}"/>
+                    <Button
+                        Grid.Column="2"
+                        Text="Unirse"
+                        Style="{StaticResource PrimaryButton}"
+                        HeightRequest="44"
+                        Command="{Binding JoinGroupCommand}"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</ContentView>

@@ -37,5 +37,62 @@ namespace Waybon.App.Services.Implementations
 
             return await response.Content.ReadFromJsonAsync<List<GroupMember>>(cancellationToken) ?? [];
         }
+
+        public async Task<bool> CreateGroupAsync(CreateGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                "api/groups/create", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
+
+        public async Task<bool> JoinGroupAsync(JoinGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                "api/groups/join", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
+
+        public async Task<RegenerateJoinCodeResponse?> RegenerateJoinCodeAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                $"api/groups/{groupId}/regenerate-code", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<RegenerateJoinCodeResponse>(cancellationToken);
+        }
     }
 }

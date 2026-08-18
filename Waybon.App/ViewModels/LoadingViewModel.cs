@@ -17,7 +17,7 @@ namespace Waybon.App.ViewModels
         // ======================
 
         [RelayCommand]
-        public async Task InitializeAsync()
+        private async Task InitializeAsync()
         {
             await _databaseService.InitializeAsync();
 

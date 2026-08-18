@@ -16,19 +16,23 @@ namespace Waybon.App.ViewModels
         private readonly IUserService _userService = userService;
         private readonly IDatabaseService _databaseService = databaseService;
 
+        private const string UsernameKey = "waybon_username";
+        private const string RoleNameKey = "waybon_roleName";
+        private const string SharingEnabledKey = "waybon_sharingEnabled";
+
 
         // ======================
         // Properties
         // ======================
 
         [ObservableProperty]
-        public partial string Username { get; set; } = preferencesService.Get("waybon_username", "Usuario");
+        public partial string Username { get; set; } = preferencesService.Get(UsernameKey, "Usuario");
 
         [ObservableProperty]
-        public partial string RoleName { get; set; } = preferencesService.Get("waybon_roleName", "Rol");
+        public partial string RoleName { get; set; } = preferencesService.Get(RoleNameKey, "Rol");
 
         [ObservableProperty]
-        public partial bool IsSharingEnabled { get; set; } = bool.TryParse(preferencesService.Get("waybon_sharingEnabled", "false"), out var enabled) && enabled;
+        public partial bool IsSharingEnabled { get; set; } = bool.TryParse(preferencesService.Get(SharingEnabledKey, "false"), out var enabled) && enabled;
 
 
         // ======================
@@ -88,7 +92,7 @@ namespace Waybon.App.ViewModels
                 if (sharingUpdated)
                 {
                     IsSharingEnabled = targetState;
-                    _preferencesService.Set("waybon_sharingEnabled", targetState.ToString());
+                    _preferencesService.Set(SharingEnabledKey, targetState.ToString());
                 }
                 else
                 {

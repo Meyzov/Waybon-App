@@ -9,116 +9,78 @@
     Shell.NavBarIsVisible="False">
 
     <ScrollView>
-        <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
-            <VerticalStackLayout
-                VerticalOptions="Center"
-                HorizontalOptions="Center"
-                Padding="32"
-                Spacing="0"
-                WidthRequest="384">
 
-                <Border
-                    BackgroundColor="{StaticResource White}"
-                    Stroke="{StaticResource Stone300}"
-                    StrokeThickness="1"
-                    StrokeShape="Rectangle"
-                    Padding="32">
+        <!-- Outer layout -->
+        <Grid Padding="0" VerticalOptions="Center" HorizontalOptions="Fill">
 
-                    <VerticalStackLayout Spacing="0">
+            <!-- Register card container -->
+            <Border Style="{StaticResource CardBorder}" 
+                    HorizontalOptions="Fill"
+                    MaximumWidthRequest="420"
+                    Margin="16,0">
 
+                <VerticalStackLayout Spacing="0">
+
+                    <!-- Section header -->
+                    <Border Style="{StaticResource SectionHeaderBorder}">
                         <Label
                             Text="Registro"
-                            FontFamily="PTSerifRegular"
-                            FontSize="30"
-                            TextColor="{StaticResource Stone800}"
-                            HorizontalOptions="Center"
-                            Margin="0,0,0,8"/>
+                            Style="{StaticResource SectionHeaderLabel}"/>
+                    </Border>
 
-                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,32"/>
+                    <!-- Form content -->
+                    <VerticalStackLayout Spacing="0">
 
-                        <!-- Username -->
+                        <!-- Username field -->
                         <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
-                            <Label
-                                Text="Nombre de usuario"
-                                FontFamily="PTSerifRegular"
-                                FontSize="14"
-                                TextColor="{StaticResource Stone700}"/>
+                            <Label Text="Nombre de usuario" Style="{StaticResource FormLabel}"/>
 
-                            <Border
-                                Stroke="{StaticResource Stone400}"
-                                StrokeThickness="1"
-                                StrokeShape="Rectangle"
-                                HeightRequest="40"
-                                Padding="8,0"
-                                BackgroundColor="Transparent">
-
+                            <Border Style="{StaticResource FormFieldBorder}">
                                 <Entry
                                     Text="{Binding Username}"
-                                    FontFamily="PTSerifRegular"
-                                    TextColor="{StaticResource Stone900}"
-                                    BackgroundColor="Transparent"
-                                    VerticalOptions="Center"/>
+                                    Style="{StaticResource FormEntry}"
+                                    Placeholder="usuario123"/>
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Email -->
+                        <!-- Email field -->
                         <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
-                            <Label
-                                Text="Email"
-                                FontFamily="PTSerifRegular"
-                                FontSize="14"
-                                TextColor="{StaticResource Stone700}"/>
+                            <Label Text="Email" Style="{StaticResource FormLabel}"/>
 
-                            <Border
-                                Stroke="{StaticResource Stone400}"
-                                StrokeThickness="1"
-                                StrokeShape="Rectangle"
-                                HeightRequest="40"
-                                Padding="8,0"
-                                BackgroundColor="Transparent">
-
+                            <Border Style="{StaticResource FormFieldBorder}">
                                 <Entry
                                     Text="{Binding Email}"
                                     Keyboard="Email"
-                                    FontFamily="PTSerifRegular"
-                                    TextColor="{StaticResource Stone900}"
-                                    BackgroundColor="Transparent"
-                                    VerticalOptions="Center"/>
+                                    Style="{StaticResource FormEntry}"
+                                    Placeholder="correo@ejemplo.com"/>
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Password -->
+                        <!-- Password field -->
                         <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
-                            <Label
-                                Text="Contraseña"
-                                FontFamily="PTSerifRegular"
-                                FontSize="14"
-                                TextColor="{StaticResource Stone700}"/>
+                            <Label Text="Contraseña" Style="{StaticResource FormLabel}"/>
 
-                            <Border
-                                Stroke="{StaticResource Stone400}"
-                                StrokeThickness="1"
-                                StrokeShape="Rectangle"
-                                HeightRequest="40"
-                                Padding="0"
-                                BackgroundColor="Transparent">
-
-                                <Grid ColumnDefinitions="*,1,42">
+                            <Border Style="{StaticResource FormFieldBorder}" Padding="0">
+                                <Grid ColumnDefinitions="*,1,48">
                                     <Entry
                                         Grid.Column="0"
                                         Text="{Binding Password}"
                                         IsPassword="{Binding IsPassword}"
-                                        FontFamily="PTSerifRegular"
-                                        TextColor="{StaticResource Stone900}"
-                                        BackgroundColor="Transparent"
-                                        Margin="8,0"
-                                        VerticalOptions="Center"/>
+                                        Style="{StaticResource FormEntry}"
+                                        Margin="8,0,8,0"
+                                        Placeholder="••••••••"/>
 
-                                    <BoxView Grid.Column="1" WidthRequest="1" Color="{StaticResource Stone400}" />
+                                    <!-- Divider -->
+                                    <BoxView 
+                                        Grid.Column="1" 
+                                        WidthRequest="1" 
+                                        Color="{StaticResource Stone400}" 
+                                        VerticalOptions="Fill" 
+                                        Margin="0,0"/>
 
-                                    <Grid Grid.Column="2" BackgroundColor="{StaticResource Stone100}">
+                                    <!-- Password visibility toggle -->
+                                    <Grid Grid.Column="2" BackgroundColor="{StaticResource Stone200}">
                                         <Path
-                                            Data="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                             Fill="Transparent"
                                             Stroke="{StaticResource Stone600}"
                                             StrokeThickness="2"
@@ -126,7 +88,18 @@
                                             HeightRequest="20"
                                             HorizontalOptions="Center"
                                             VerticalOptions="Center"
-                                            Aspect="Uniform"/>
+                                            Aspect="Uniform">
+                                            <Path.Triggers>
+                                                <DataTrigger TargetType="Path" Binding="{Binding IsPassword}" Value="True">
+                                                    <Setter Property="Data" Value="M4 10.5C6.6 13.5 9.3 15 12 15s5.4-1.5 8-4.5 M12 15v3 M7.5 13.5l-1.5 3 M16.5 13.5l1.5 3" />
+                                                    <Setter Property="TranslationY" Value="1.5" />
+                                                </DataTrigger>
+
+                                                <DataTrigger TargetType="Path" Binding="{Binding IsPassword}" Value="False">
+                                                    <Setter Property="Data" Value="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </DataTrigger>
+                                            </Path.Triggers>
+                                        </Path>
 
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding TogglePasswordCommand}"/>
@@ -136,59 +109,37 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Role -->
-                        <VerticalStackLayout Spacing="4" Margin="0,0,0,32">
-                            <Label
-                                Text="Rol"
-                                FontFamily="PTSerifRegular"
-                                FontSize="14"
-                                TextColor="{StaticResource Stone700}"/>
+                        <!-- Role field -->
+                        <VerticalStackLayout Spacing="4" Margin="0,0,0,24">
+                            <Label Text="Rol" Style="{StaticResource FormLabel}"/>
 
-                            <Border
-                                Stroke="{StaticResource Stone400}"
-                                StrokeThickness="1"
-                                StrokeShape="Rectangle"
-                                HeightRequest="40"
-                                Padding="8,0"
-                                BackgroundColor="Transparent">
-
+                            <Border Style="{StaticResource FormFieldBorder}">
                                 <Entry
                                     Text="{Binding RoleName}"
-                                    FontFamily="PTSerifRegular"
-                                    TextColor="{StaticResource Stone900}"
-                                    BackgroundColor="Transparent"
-                                    VerticalOptions="Center"/>
+                                    Style="{StaticResource FormEntry}"
+                                    Placeholder="Rol de usuario"/>
                             </Border>
                         </VerticalStackLayout>
 
-                        <BoxView HeightRequest="1" Color="{StaticResource Stone300}" Margin="0,0,0,16"/>
+                        <!-- Divider -->
+                        <BoxView Style="{StaticResource Divider}" Margin="0,0,0,20"/>
 
+                        <!-- Action buttons -->
                         <Button
                             Text="{Binding RegisterButtonText}"
-                            FontFamily="PTSerifRegular"
-                            FontSize="16"
-                            BackgroundColor="{StaticResource Stone800}"
-                            TextColor="{StaticResource White}"
-                            CornerRadius="0"
-                            HeightRequest="40"
+                            Style="{StaticResource PrimaryButton}"
                             Margin="0,0,0,12"
                             Command="{Binding RegisterCommand}"/>
 
                         <Button
                             Text="Volver a iniciar sesión"
-                            FontFamily="PTSerifRegular"
-                            FontSize="16"
-                            BackgroundColor="Transparent"
-                            TextColor="{StaticResource Stone800}"
-                            BorderColor="{StaticResource Stone800}"
-                            BorderWidth="1"
-                            CornerRadius="0"
-                            HeightRequest="40"
+                            Style="{StaticResource SecondaryButton}"
+                            Margin="0,0,0,0"
                             Command="{Binding NavigateToLoginCommand}"/>
 
                     </VerticalStackLayout>
-                </Border>
-            </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
         </Grid>
     </ScrollView>
 </ContentPage>

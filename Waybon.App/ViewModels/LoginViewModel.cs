@@ -12,6 +12,12 @@ namespace Waybon.App.ViewModels
         private readonly IPreferencesService _preferencesService = preferencesService;
         private readonly IDialogService _dialogService = dialogService;
 
+        private const string SessionIdKey = "waybon_sessionId";
+        private const string UserIdKey = "waybon_userId";
+        private const string UsernameKey = "waybon_username";
+        private const string RoleNameKey = "waybon_roleName";
+        private const string SharingEnabledKey = "waybon_sharingEnabled";
+
 
         // ======================
         // Properties
@@ -33,6 +39,7 @@ namespace Waybon.App.ViewModels
 
         public string LoginButtonText => IsBusy ? "Entrando..." : "Entrar";
 
+
         // ======================
         // Commands
         // ======================
@@ -42,7 +49,7 @@ namespace Waybon.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
             {
-                await _dialogService.ShowAlertAsync("Error", "Completa todos los campos.", "OK");
+                await _dialogService.ShowAlertAsync("Error", "Completa todos los campos.", "Ok");
                 return;
             }
 
@@ -59,7 +66,7 @@ namespace Waybon.App.ViewModels
                 var result = await _authService.LoginAsync(request);
                 if (result == null)
                 {
-                    await _dialogService.ShowAlertAsync("Error", "Credenciales inválidas.", "OK");
+                    await _dialogService.ShowAlertAsync("Error", "Credenciales inválidas.", "Ok");
                     return;
                 }
 
@@ -68,7 +75,8 @@ namespace Waybon.App.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowAlertAsync("Error", $"No se pudo conectar: {ex.Message}", "OK");
+                System.Diagnostics.Debug.WriteLine($"Error logging in: {ex.Message}");
+                await _dialogService.ShowAlertAsync("Error", $"No se pudo conectar: {ex.Message}", "Ok");
             }
             finally
             {
@@ -91,7 +99,7 @@ namespace Waybon.App.ViewModels
         [RelayCommand]
         private async Task ForgotPasswordAsync()
         {
-            await _dialogService.ShowAlertAsync("Recuperar contraseña", "Función no implementada.", "OK");
+            await _dialogService.ShowAlertAsync("Recuperar contraseña", "Función no implementada.", "Ok");
         }
 
 
@@ -103,11 +111,11 @@ namespace Waybon.App.ViewModels
 
         private void SaveSession(LoginResponse result)
         {
-            _preferencesService.Set("waybon_sessionId", result.SessionId.ToString());
-            _preferencesService.Set("waybon_userId", result.UserId.ToString());
-            _preferencesService.Set("waybon_username", result.Username);
-            _preferencesService.Set("waybon_roleName", result.RoleName);
-            _preferencesService.Set("waybon_sharingEnabled", result.SharingEnabled.ToString());
+            _preferencesService.Set(SessionIdKey, result.SessionId.ToString());
+            _preferencesService.Set(UserIdKey, result.UserId.ToString());
+            _preferencesService.Set(UsernameKey, result.Username);
+            _preferencesService.Set(RoleNameKey, result.RoleName);
+            _preferencesService.Set(SharingEnabledKey, result.SharingEnabled.ToString());
         }
     }
 }

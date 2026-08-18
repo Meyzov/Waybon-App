@@ -8,8 +8,8 @@ namespace Waybon.App.Data.Interfaces
     public interface ILocationRepository
     {
         Task SaveLocationAsync(UserLocation location);
-        Task<UserLocation> GetLocationAsync(Guid userId);
-        Task<List<UserLocation>> GetLocationsAsync(IEnumerable<Guid> userIds);
+        Task<UserLocation?> GetLocationAsync(Guid userId);
+        Task<IEnumerable<UserLocation>> GetLocationsAsync(IEnumerable<Guid> userIds);
         Task ClearAllLocationsAsync();
     }
 }

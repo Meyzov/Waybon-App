@@ -13,20 +13,20 @@ namespace Waybon.App.Data.Repositories
             return _db.InsertOrReplaceAsync(location);
         }
 
-        public Task<UserLocation> GetLocationAsync(Guid userId)
+        public async Task<UserLocation?> GetLocationAsync(Guid userId)
         {
-            return _db.Table<UserLocation>().Where(l => l.UserId == userId).FirstOrDefaultAsync();
+            return await _db.Table<UserLocation>().Where(l => l.UserId == userId).FirstOrDefaultAsync();
         }
 
-        public Task<List<UserLocation>> GetLocationsAsync(IEnumerable<Guid> userIds)
+        public async Task<IEnumerable<UserLocation>> GetLocationsAsync(IEnumerable<Guid> userIds)
         {
             var ids = userIds.ToList();
             if (ids.Count == 0)
             {
-                return Task.FromResult(new List<UserLocation>());
+                return [];
             }
 
-            return _db.Table<UserLocation>().Where(l => ids.Contains(l.UserId)).ToListAsync();
+            return await _db.Table<UserLocation>().Where(l => ids.Contains(l.UserId)).ToListAsync();
         }
 
         public Task ClearAllLocationsAsync()

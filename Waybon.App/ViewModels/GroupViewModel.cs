@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 using Waybon.App.Data.Entities;
 using Waybon.App.Data.Interfaces;
 using Waybon.App.Models;
@@ -7,17 +8,19 @@ using Waybon.App.Services.Interfaces;
 
 namespace Waybon.App.ViewModels
 {
-    public partial class GroupViewModel(ISessionService sessionService, IGroupService groupService, IPreferencesService preferencesService, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository) : ObservableObject
+    public partial class GroupViewModel(ISessionService sessionService, IGroupService groupService, IPreferencesService preferencesService, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository, IDialogService dialogService) : ObservableObject
     {
         private readonly ISessionService _sessionService = sessionService;
         private readonly IGroupService _groupService = groupService;
         private readonly IPreferencesService _preferencesService = preferencesService;
         private readonly IGroupRepository _groupRepository = groupRepository;
         private readonly IGroupMemberRepository _groupMemberRepository = groupMemberRepository;
+        private readonly IDialogService _dialogService = dialogService;
 
         private const string SelectedGroupIdKey = "waybon_selectedGroupId";
         private const string SelectedGroupNameKey = "waybon_selectedGroupName";
         private const string SelectedGroupOwnerIdKey = "waybon_selectedGroupOwnerId";
+        private const string SelectedGroupJoinCodeKey = "waybon_selectedGroupJoinCode";
 
 
         // ======================
@@ -33,22 +36,40 @@ namespace Waybon.App.ViewModels
         // ======================
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(AreGroupsVisible))]
         [NotifyPropertyChangedFor(nameof(IsNoGroupsMessageVisible))]
         [NotifyPropertyChangedFor(nameof(IsGroupsLoaderVisible))]
-        public partial IEnumerable<GroupDetails> JoinedGroups { get; set; } = [];
+        public partial ObservableCollection<GroupDetails> JoinedGroups { get; set; } = [];
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(AreGroupsVisible))]
         [NotifyPropertyChangedFor(nameof(IsNoGroupsMessageVisible))]
         [NotifyPropertyChangedFor(nameof(IsGroupsLoaderVisible))]
         public partial bool IsGroupsLoading { get; set; }
 
-        private bool HasAnyGroups => JoinedGroups.Any();
+        private bool HasAnyGroups => JoinedGroups.Count > 0;
 
-        public bool AreGroupsVisible => HasAnyGroups && !IsGroupSelected;
-        public bool IsNoGroupsMessageVisible => !HasAnyGroups && !IsGroupsLoading;
-        public bool IsGroupsLoaderVisible => !HasAnyGroups && IsGroupsLoading;
+        public bool IsNoGroupsMessageVisible => AreGroupsVisible && !HasAnyGroups && !IsGroupsLoading;
+        public bool IsGroupsLoaderVisible => AreGroupsVisible && !HasAnyGroups && IsGroupsLoading;
+
+
+        // ======================
+        // Paneles
+        // ======================
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsNoGroupsMessageVisible))]
+        [NotifyPropertyChangedFor(nameof(IsGroupsLoaderVisible))]
+        public partial bool AreGroupsVisible { get; set; } = true;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsNoMembersMessageVisible))]
+        [NotifyPropertyChangedFor(nameof(IsMembersLoaderVisible))]
+        public partial bool AreMembersVisible { get; set; }
+
+        [ObservableProperty]
+        public partial bool IsCreateGroupPanelVisible { get; set; }
+
+        [ObservableProperty]
+        public partial bool IsJoinGroupPanelVisible { get; set; }
 
 
         // ======================
@@ -56,14 +77,32 @@ namespace Waybon.App.ViewModels
         // ======================
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(AreGroupsVisible))]
         public partial bool IsGroupSelected { get; set; }
 
         [ObservableProperty]
         public partial string SelectedGroupName { get; set; } = "Mis Grupos";
 
         public int SelectedGroupId { get; set; }
-        public Guid SelectedGroupOwnerId { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCurrentUserOwner))]
+        public partial Guid SelectedGroupOwnerId { get; set; }
+
+        [ObservableProperty]
+        public partial string SelectedGroupJoinCode { get; set; } = string.Empty;
+
+        public bool IsCurrentUserOwner => SelectedGroupOwnerId != Guid.Empty && SelectedGroupOwnerId == _sessionService.UserId;
+
+
+        // ======================
+        // Group Panels Inputs
+        // ======================
+
+        [ObservableProperty]
+        public partial string NewGroupName { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial string JoinCodeInput { get; set; } = string.Empty;
 
 
         // ======================
@@ -71,22 +110,56 @@ namespace Waybon.App.ViewModels
         // ======================
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(AreMembersVisible))]
         [NotifyPropertyChangedFor(nameof(IsNoMembersMessageVisible))]
         [NotifyPropertyChangedFor(nameof(IsMembersLoaderVisible))]
-        public partial IEnumerable<GroupMember> GroupMembers { get; set; } = [];
+        public partial ObservableCollection<GroupMember> GroupMembers { get; set; } = [];
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(AreMembersVisible))]
         [NotifyPropertyChangedFor(nameof(IsNoMembersMessageVisible))]
         [NotifyPropertyChangedFor(nameof(IsMembersLoaderVisible))]
         public partial bool IsMembersLoading { get; set; }
 
-        private bool HasAnyMembers => GroupMembers.Any();
+        private bool HasAnyMembers => GroupMembers.Count > 0;
 
-        public bool AreMembersVisible => HasAnyMembers && IsGroupSelected;
-        public bool IsNoMembersMessageVisible => !HasAnyMembers && !IsMembersLoading;
-        public bool IsMembersLoaderVisible => !HasAnyMembers && IsMembersLoading;
+        public bool IsNoMembersMessageVisible => AreMembersVisible && !HasAnyMembers && !IsMembersLoading;
+        public bool IsMembersLoaderVisible => AreMembersVisible && !HasAnyMembers && IsMembersLoading;
+
+
+        // ======================
+        // Panel Switching
+        // ======================
+
+        private void SwitchToGroupsPanel()
+        {
+            AreGroupsVisible = true;
+            AreMembersVisible = false;
+            IsCreateGroupPanelVisible = false;
+            IsJoinGroupPanelVisible = false;
+        }
+
+        private void SwitchToMembersPanel()
+        {
+            AreGroupsVisible = false;
+            AreMembersVisible = true;
+            IsCreateGroupPanelVisible = false;
+            IsJoinGroupPanelVisible = false;
+        }
+
+        private void SwitchToCreateGroupPanel()
+        {
+            AreGroupsVisible = false;
+            AreMembersVisible = false;
+            IsCreateGroupPanelVisible = true;
+            IsJoinGroupPanelVisible = false;
+        }
+
+        private void SwitchToJoinGroupPanel()
+        {
+            AreGroupsVisible = false;
+            AreMembersVisible = false;
+            IsCreateGroupPanelVisible = false;
+            IsJoinGroupPanelVisible = true;
+        }
 
 
         // ======================
@@ -97,17 +170,9 @@ namespace Waybon.App.ViewModels
         {
             try
             {
-                var savedGroupIdText = _preferencesService.Get(SelectedGroupIdKey);
-                var savedGroupName = _preferencesService.Get(SelectedGroupNameKey);
-                var savedOwnerIdText = _preferencesService.Get(SelectedGroupOwnerIdKey);
-
-                bool isValidId = int.TryParse(savedGroupIdText, out var savedGroupId);
-                bool hasName = !string.IsNullOrEmpty(savedGroupName);
-                bool isValidOwner = Guid.TryParse(savedOwnerIdText, out var savedOwnerId);
-
-                if (!isValidId || !hasName || !isValidOwner)
+                if (!TryGetSavedGroupState())
                 {
-                    IsGroupSelected = false;
+                    SwitchToGroupsPanel();
 
                     await LoadCachedGroupsAsync();
                     _ = RefreshGroupsAsync();
@@ -115,11 +180,7 @@ namespace Waybon.App.ViewModels
                     return;
                 }
 
-                IsGroupSelected = true;
-
-                SelectedGroupId = savedGroupId;
-                SelectedGroupName = savedGroupName;
-                SelectedGroupOwnerId = savedOwnerId;
+                SwitchToMembersPanel();
 
                 await LoadCachedMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
                 _ = RefreshMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
@@ -130,6 +191,31 @@ namespace Waybon.App.ViewModels
             }
         }
 
+        private bool TryGetSavedGroupState()
+        {
+            var groupIdText = _preferencesService.Get(SelectedGroupIdKey);
+            var savedGroupName = _preferencesService.Get(SelectedGroupNameKey);
+            var ownerIdText = _preferencesService.Get(SelectedGroupOwnerIdKey);
+            var savedJoinCode = _preferencesService.Get(SelectedGroupJoinCodeKey);
+
+            bool isValidId = int.TryParse(groupIdText, out int savedGroupId);
+            bool isValidOwner = Guid.TryParse(ownerIdText, out Guid savedOwnerId);
+
+            if (isValidId && !string.IsNullOrEmpty(savedGroupName) && isValidOwner)
+            {
+                IsGroupSelected = true;
+                SelectedGroupId = savedGroupId;
+                SelectedGroupName = savedGroupName;
+                SelectedGroupOwnerId = savedOwnerId;
+                SelectedGroupJoinCode = savedJoinCode;
+
+                return true;
+            }
+
+            IsGroupSelected = false;
+            return false;
+        }
+
 
         // ======================
         // Group Loading
@@ -137,17 +223,13 @@ namespace Waybon.App.ViewModels
 
         public async Task LoadCachedGroupsAsync()
         {
-            _groupLoadCts?.Cancel();
-
-            var cts = new CancellationTokenSource();
-            _groupLoadCts = cts;
-
-            IsGroupsLoading = true;
+            var cts = StartGroupLoad();
+            var currentUserId = _sessionService.UserId;
 
             try
             {
                 var cachedGroups = await _groupRepository.GetGroupsAsync();
-                if (cachedGroups.Count == 0)
+                if (!cachedGroups.Any())
                 {
                     // ======================
                     // Abort if stale
@@ -155,12 +237,15 @@ namespace Waybon.App.ViewModels
 
                     cts.Token.ThrowIfCancellationRequested();
 
-                    JoinedGroups = [];
+                    JoinedGroups.Clear();
+                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
+
                     return;
                 }
 
                 var groups = MapToGroupDetails(cachedGroups);
-                FormatGroupsForDisplay(groups);
+                FormatGroupsForDisplay(currentUserId, groups);
 
                 // ======================
                 // Abort if stale
@@ -168,7 +253,41 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                JoinedGroups = groups.OrderBy(g => g.Name);
+                var incomingIds = groups.Select(g => g.GroupId).ToHashSet();
+                var groupsToRemove = JoinedGroups.Where(g => !incomingIds.Contains(g.GroupId)).ToList();
+
+                foreach (var group in groupsToRemove)
+                {
+                    JoinedGroups.Remove(group);
+                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
+                }
+
+                foreach (var group in groups.OrderBy(g => g.Name))
+                {
+                    var existingGroup = JoinedGroups.FirstOrDefault(g => g.GroupId == group.GroupId);
+                    if (existingGroup != null)
+                    {
+                        existingGroup.Name = group.Name;
+                        existingGroup.Username = group.Username;
+                        existingGroup.DisplayUsername = group.DisplayUsername;
+                        existingGroup.JoinCode = group.JoinCode;
+                        existingGroup.JoinCodeExpiresAt = group.JoinCodeExpiresAt;
+                        existingGroup.CreatedAt = group.CreatedAt;
+
+                        continue;
+                    }
+
+                    int index = 0;
+                    while (index < JoinedGroups.Count && string.Compare(JoinedGroups[index].Name, group.Name, StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        index++;
+                    }
+
+                    JoinedGroups.Insert(index, group);
+                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
+                }
             }
             catch (OperationCanceledException)
             {
@@ -180,36 +299,21 @@ namespace Waybon.App.ViewModels
             }
             finally
             {
-                if (_groupLoadCts == cts)
-                {
-                    IsGroupsLoading = false;
-                    _groupLoadCts = null;
-                }
-
-                cts.Dispose();
+                FinishGroupLoad(cts);
             }
         }
 
         public async Task RefreshGroupsAsync()
         {
-            _groupLoadCts?.Cancel();
+            var cts = StartGroupLoad();
 
-            var cts = new CancellationTokenSource();
-            _groupLoadCts = cts;
-
-            IsGroupsLoading = true;
+            var currentSessionId = _sessionService.SessionId;
+            var currentUserId = _sessionService.UserId;
 
             try
             {
-                if (_sessionService.SessionId == Guid.Empty)
-                {
-                    return;
-                }
-
-                var request = new SessionIdRequest { SessionId = _sessionService.SessionId };
-                var groups = await _groupService.GetJoinedGroupsAsync(request, _groupLoadCts.Token);
-
-                if (groups == null || !groups.Any())
+                var groups = await FetchGroupsAsync(currentSessionId, cts.Token);
+                if (groups.Count == 0)
                 {
                     // ======================
                     // Abort if stale
@@ -217,7 +321,9 @@ namespace Waybon.App.ViewModels
 
                     cts.Token.ThrowIfCancellationRequested();
 
-                    JoinedGroups = [];
+                    JoinedGroups.Clear();
+                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
 
                     await _groupMemberRepository.ClearAllMembersAsync();
                     await _groupRepository.ClearAllGroupsAsync();
@@ -225,7 +331,8 @@ namespace Waybon.App.ViewModels
                     return;
                 }
 
-                FormatGroupsForDisplay(groups);
+                var localGroupsToSave = MapToLocalGroups(groups);
+                FormatGroupsForDisplay(currentUserId, groups);
 
                 // ======================
                 // Abort if stale
@@ -233,8 +340,43 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                JoinedGroups = groups.OrderBy(g => g.Name);
-                await _groupRepository.SaveGroupsAsync(MapToLocalGroups(groups));
+                var incomingIds = groups.Select(g => g.GroupId).ToHashSet();
+                var groupsToRemove = JoinedGroups.Where(g => !incomingIds.Contains(g.GroupId)).ToList();
+
+                foreach (var group in groupsToRemove)
+                {
+                    JoinedGroups.Remove(group);
+                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
+                }
+
+                foreach (var group in groups.OrderBy(g => g.Name))
+                {
+                    var existingGroup = JoinedGroups.FirstOrDefault(g => g.GroupId == group.GroupId);
+                    if (existingGroup != null)
+                    {
+                        existingGroup.Name = group.Name;
+                        existingGroup.Username = group.Username;
+                        existingGroup.DisplayUsername = group.DisplayUsername;
+                        existingGroup.JoinCode = group.JoinCode;
+                        existingGroup.JoinCodeExpiresAt = group.JoinCodeExpiresAt;
+                        existingGroup.CreatedAt = group.CreatedAt;
+
+                        continue;
+                    }
+
+                    int index = 0;
+                    while (index < JoinedGroups.Count && string.Compare(JoinedGroups[index].Name, group.Name, StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        index++;
+                    }
+
+                    JoinedGroups.Insert(index, group);
+                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
+                }
+
+                await _groupRepository.SaveGroupsAsync(localGroupsToSave);
             }
             catch (OperationCanceledException)
             {
@@ -246,14 +388,44 @@ namespace Waybon.App.ViewModels
             }
             finally
             {
-                if (_groupLoadCts == cts)
-                {
-                    IsGroupsLoading = false;
-                    _groupLoadCts = null;
-                }
-
-                cts.Dispose();
+                FinishGroupLoad(cts);
             }
+        }
+
+        private CancellationTokenSource StartGroupLoad()
+        {
+            _groupLoadCts?.Cancel();
+            var cts = new CancellationTokenSource();
+            _groupLoadCts = cts;
+
+            IsGroupsLoading = true;
+            return cts;
+        }
+
+        private void FinishGroupLoad(CancellationTokenSource cts)
+        {
+            if (_groupLoadCts == cts)
+            {
+                IsGroupsLoading = false;
+                _groupLoadCts = null;
+            }
+
+            cts.Dispose();
+        }
+
+        private async Task<List<GroupDetails>> FetchGroupsAsync(Guid sessionId, CancellationToken cancellationToken)
+        {
+            if (sessionId == Guid.Empty)
+            {
+                return [];
+            }
+
+            var request = new SessionIdRequest
+            {
+                SessionId = sessionId
+            };
+
+            return [.. await _groupService.GetJoinedGroupsAsync(request, cancellationToken)];
         }
 
 
@@ -263,17 +435,13 @@ namespace Waybon.App.ViewModels
 
         public async Task LoadCachedMembersAsync(int selectedGroupId, Guid selectedGroupOwnerId)
         {
-            _memberLoadCts?.Cancel();
-
-            var cts = new CancellationTokenSource();
-            _memberLoadCts = cts;
-
-            IsMembersLoading = true;
+            var cts = StartMemberLoad();
+            var currentUserId = _sessionService.UserId;
 
             try
             {
                 var cachedMembers = await _groupMemberRepository.GetMembersAsync(selectedGroupId);
-                if (cachedMembers.Count == 0)
+                if (!cachedMembers.Any())
                 {
                     // ======================
                     // Abort if stale
@@ -281,12 +449,15 @@ namespace Waybon.App.ViewModels
 
                     cts.Token.ThrowIfCancellationRequested();
 
-                    GroupMembers = [];
+                    GroupMembers.Clear();
+                    OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+                    OnPropertyChanged(nameof(IsMembersLoaderVisible));
+
                     return;
                 }
-                
+
                 var members = MapToGroupMembers(cachedMembers);
-                FormatMembersForDisplay(selectedGroupOwnerId, members);
+                FormatMembersForDisplay(currentUserId, selectedGroupOwnerId, members);
 
                 // ======================
                 // Abort if stale
@@ -294,7 +465,43 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                GroupMembers = members.OrderBy(m => m.Username);
+                var incomingIds = members.Select(m => m.UserId).ToHashSet();
+                var membersToRemove = GroupMembers.Where(m => !incomingIds.Contains(m.UserId)).ToList();
+
+                foreach (var member in membersToRemove)
+                {
+                    GroupMembers.Remove(member);
+                    OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+                    OnPropertyChanged(nameof(IsMembersLoaderVisible));
+                }
+
+                foreach (var member in members.OrderBy(m => m.Username))
+                {
+                    var existingMember = GroupMembers.FirstOrDefault(m => m.UserId == member.UserId);
+                    if (existingMember != null)
+                    {
+                        existingMember.Username = member.Username;
+                        existingMember.DisplayUsername = member.DisplayUsername;
+                        existingMember.SharingEnabled = member.SharingEnabled;
+                        existingMember.BlockedByMe = member.BlockedByMe;
+                        existingMember.BlockingMe = member.BlockingMe;
+                        existingMember.LastActivityAt = member.LastActivityAt;
+
+                        BuildMemberTags(existingMember);
+
+                        continue;
+                    }
+
+                    int index = 0;
+                    while (index < GroupMembers.Count && string.Compare(GroupMembers[index].Username, member.Username, StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        index++;
+                    }
+
+                    GroupMembers.Insert(index, member);
+                    OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+                    OnPropertyChanged(nameof(IsMembersLoaderVisible));
+                }
             }
             catch (OperationCanceledException)
             {
@@ -306,36 +513,21 @@ namespace Waybon.App.ViewModels
             }
             finally
             {
-                if (_memberLoadCts == cts)
-                {
-                    IsMembersLoading = false;
-                    _memberLoadCts = null;
-                }
-
-                cts.Dispose();
+                FinishMemberLoad(cts);
             }
         }
 
         public async Task RefreshMembersAsync(int selectedGroupId, Guid selectedGroupOwnerId)
         {
-            _memberLoadCts?.Cancel();
+            var cts = StartMemberLoad();
 
-            var cts = new CancellationTokenSource();
-            _memberLoadCts = cts;
-
-            IsMembersLoading = true;
+            var currentSessionId = _sessionService.SessionId;
+            var currentUserId = _sessionService.UserId;
 
             try
             {
-                if (_sessionService.SessionId == Guid.Empty)
-                {
-                    return;
-                }
-
-                var request = new SessionIdRequest { SessionId = _sessionService.SessionId };
-                var members = await _groupService.GetGroupMembersAsync(selectedGroupId, request, _memberLoadCts.Token);
-
-                if (members == null || !members.Any())
+                var members = await FetchMembersAsync(currentSessionId, selectedGroupId, cts.Token);
+                if (members.Count == 0)
                 {
                     // ======================
                     // Abort if stale
@@ -343,13 +535,17 @@ namespace Waybon.App.ViewModels
 
                     cts.Token.ThrowIfCancellationRequested();
 
-                    GroupMembers = [];
+                    GroupMembers.Clear();
+                    OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+                    OnPropertyChanged(nameof(IsMembersLoaderVisible));
+
                     await _groupMemberRepository.ClearMembersAsync(selectedGroupId);
 
                     return;
                 }
 
-                FormatMembersForDisplay(selectedGroupOwnerId, members);
+                var localMembersToSave = MapToLocalMembers(selectedGroupId, members);
+                FormatMembersForDisplay(currentUserId, selectedGroupOwnerId, members);
 
                 // ======================
                 // Abort if stale
@@ -357,8 +553,45 @@ namespace Waybon.App.ViewModels
 
                 cts.Token.ThrowIfCancellationRequested();
 
-                GroupMembers = members.OrderBy(m => m.Username);
-                await _groupMemberRepository.SaveMembersAsync(selectedGroupId, MapToLocalMembers(selectedGroupId, members));
+                var incomingIds = members.Select(m => m.UserId).ToHashSet();
+                var membersToRemove = GroupMembers.Where(m => !incomingIds.Contains(m.UserId)).ToList();
+
+                foreach (var member in membersToRemove)
+                {
+                    GroupMembers.Remove(member);
+                    OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+                    OnPropertyChanged(nameof(IsMembersLoaderVisible));
+                }
+
+                foreach (var member in members.OrderBy(m => m.Username))
+                {
+                    var existingMember = GroupMembers.FirstOrDefault(m => m.UserId == member.UserId);
+                    if (existingMember != null)
+                    {
+                        existingMember.Username = member.Username;
+                        existingMember.DisplayUsername = member.DisplayUsername;
+                        existingMember.SharingEnabled = member.SharingEnabled;
+                        existingMember.BlockedByMe = member.BlockedByMe;
+                        existingMember.BlockingMe = member.BlockingMe;
+                        existingMember.LastActivityAt = member.LastActivityAt;
+
+                        BuildMemberTags(existingMember);
+
+                        continue;
+                    }
+
+                    int index = 0;
+                    while (index < GroupMembers.Count && string.Compare(GroupMembers[index].Username, member.Username, StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        index++;
+                    }
+
+                    GroupMembers.Insert(index, member);
+                    OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+                    OnPropertyChanged(nameof(IsMembersLoaderVisible));
+                }
+
+                await _groupMemberRepository.SaveMembersAsync(selectedGroupId, localMembersToSave);
             }
             catch (OperationCanceledException)
             {
@@ -370,14 +603,44 @@ namespace Waybon.App.ViewModels
             }
             finally
             {
-                if (_memberLoadCts == cts)
-                {
-                    IsMembersLoading = false;
-                    _memberLoadCts = null;
-                }
-
-                cts.Dispose();
+                FinishMemberLoad(cts);
             }
+        }
+
+        private CancellationTokenSource StartMemberLoad()
+        {
+            _memberLoadCts?.Cancel();
+            var cts = new CancellationTokenSource();
+            _memberLoadCts = cts;
+
+            IsMembersLoading = true;
+            return cts;
+        }
+
+        private void FinishMemberLoad(CancellationTokenSource cts)
+        {
+            if (_memberLoadCts == cts)
+            {
+                IsMembersLoading = false;
+                _memberLoadCts = null;
+            }
+
+            cts.Dispose();
+        }
+
+        private async Task<List<GroupMember>> FetchMembersAsync(Guid sessionId, int groupId, CancellationToken cancellationToken)
+        {
+            if (sessionId == Guid.Empty)
+            {
+                return [];
+            }
+
+            var request = new SessionIdRequest
+            {
+                SessionId = sessionId
+            };
+
+            return [.. await _groupService.GetGroupMembersAsync(groupId, request, cancellationToken)];
         }
 
 
@@ -385,23 +648,24 @@ namespace Waybon.App.ViewModels
         // Display Formatting
         // ======================
 
-        private void FormatGroupsForDisplay(IEnumerable<GroupDetails> groups)
+        private static void FormatGroupsForDisplay(Guid currentUserId, IEnumerable<GroupDetails> groups)
         {
-            var currentUserId = _sessionService.UserId;
-
             foreach (var group in groups)
             {
-                group.DisplayUsername = (group.OwnerUserId == currentUserId) ? $"{group.Username} (Yo)" : group.Username;
+                group.DisplayUsername = (group.OwnerUserId == currentUserId)
+                    ? $"{group.Username} (Yo)"
+                    : group.Username;
+
+                group.CreatedAt = ToLocalTime(group.CreatedAt);
             }
         }
 
-        private void FormatMembersForDisplay(Guid selectedGroupOwnerId, IEnumerable<GroupMember> members)
+        private static void FormatMembersForDisplay(Guid currentUserId, Guid selectedGroupOwnerId, IEnumerable<GroupMember> members)
         {
-            var currentUserId = _sessionService.UserId;
-
             foreach (var member in members)
             {
                 member.DisplayUsername = BuildMemberDisplayName(currentUserId, selectedGroupOwnerId, member);
+                member.LastActivityAt = ToLocalTime(member.LastActivityAt);
                 BuildMemberTags(member);
             }
         }
@@ -411,20 +675,9 @@ namespace Waybon.App.ViewModels
             var isCurrentUser = member.UserId == currentUserId;
             var isOwner = member.UserId == selectedGroupOwnerId;
 
-            if (isCurrentUser && isOwner)
-            {
-                return $"{member.Username} (Yo, Dueño)";
-            }
-
-            if (isOwner)
-            {
-                return $"{member.Username} (Dueño)";
-            }
-
-            if (isCurrentUser)
-            {
-                return $"{member.Username} (Yo)";
-            }
+            if (isCurrentUser && isOwner) return $"{member.Username} (Yo, Dueño)";
+            if (isOwner) return $"{member.Username} (Dueño)";
+            if (isCurrentUser) return $"{member.Username} (Yo)";
 
             return member.Username;
         }
@@ -433,58 +686,61 @@ namespace Waybon.App.ViewModels
         {
             member.Tags.Clear();
 
-            if (member.SharingEnabled)
-            {
-                member.Tags.Add("Compartiendo");
-            }
-            else
-            {
-                member.Tags.Add("No Compartiendo");
-            }
+            member.Tags.Add(member.SharingEnabled ? "Compartiendo" : "No Compartiendo");
 
-            if (member.BlockedByMe)
-            {
-                member.Tags.Add("Bloqueado");
-            }
-
-            if (member.BlockingMe)
-            {
-                member.Tags.Add("Te bloqueó");
-            }
+            if (member.BlockedByMe) member.Tags.Add("Bloqueado");
+            if (member.BlockingMe) member.Tags.Add("Te bloqueó");
         }
+
+
+        // ======================
+        // Time Helpers
+        // ======================
+
+        private static DateTime ToLocalTime(DateTime date) => DateTime.SpecifyKind(date, DateTimeKind.Utc).ToLocalTime();
+        private static DateTime? ToLocalTime(DateTime? date) => date.HasValue ? ToLocalTime(date.Value) : null;
 
 
         // ======================
         // Commands
         // ======================
 
-        [RelayCommand]
+        [RelayCommand(AllowConcurrentExecutions = false)]
         private async Task SelectGroupAsync(GroupDetails group)
         {
-            GroupMembers = [];
+            GroupMembers.Clear();
+            OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+            OnPropertyChanged(nameof(IsMembersLoaderVisible));
 
             SelectedGroupId = group.GroupId;
             SelectedGroupName = group.Name;
             SelectedGroupOwnerId = group.OwnerUserId;
+            SelectedGroupJoinCode = group.JoinCode ?? string.Empty;
 
             _preferencesService.Set(SelectedGroupIdKey, group.GroupId.ToString());
             _preferencesService.Set(SelectedGroupNameKey, group.Name);
             _preferencesService.Set(SelectedGroupOwnerIdKey, group.OwnerUserId.ToString());
+            _preferencesService.Set(SelectedGroupJoinCodeKey, group.JoinCode ?? string.Empty);
 
             IsGroupSelected = true;
+            SwitchToMembersPanel();
 
             await LoadCachedMembersAsync(group.GroupId, group.OwnerUserId);
             _ = RefreshMembersAsync(group.GroupId, group.OwnerUserId);
         }
 
-        [RelayCommand]
+        [RelayCommand(AllowConcurrentExecutions = false)]
         private async Task BackToGroupsAsync()
         {
-            ClearSelectedGroupState();
-            GroupMembers = [];
-
             await LoadCachedGroupsAsync();
             _ = RefreshGroupsAsync();
+
+            ClearSelectedGroupState();
+            SwitchToGroupsPanel();
+
+            GroupMembers.Clear();
+            OnPropertyChanged(nameof(IsNoMembersMessageVisible));
+            OnPropertyChanged(nameof(IsMembersLoaderVisible));
         }
 
         private void ClearSelectedGroupState()
@@ -493,10 +749,214 @@ namespace Waybon.App.ViewModels
             SelectedGroupId = 0;
             SelectedGroupName = "Mis Grupos";
             SelectedGroupOwnerId = Guid.Empty;
+            SelectedGroupJoinCode = string.Empty;
 
             _preferencesService.Set(SelectedGroupIdKey, string.Empty);
             _preferencesService.Set(SelectedGroupNameKey, string.Empty);
             _preferencesService.Set(SelectedGroupOwnerIdKey, string.Empty);
+            _preferencesService.Set(SelectedGroupJoinCodeKey, string.Empty);
+        }
+
+        [RelayCommand]
+        private void ShowCreateGroup()
+        {
+            SwitchToCreateGroupPanel();
+            NewGroupName = string.Empty;
+        }
+
+        [RelayCommand]
+        private void ShowJoinGroup()
+        {
+            SwitchToJoinGroupPanel();
+            JoinCodeInput = string.Empty;
+        }
+
+        [RelayCommand]
+        private void CancelCreateGroup()
+        {
+            SwitchToGroupsPanel();
+            NewGroupName = string.Empty;
+        }
+
+        [RelayCommand]
+        private void CancelJoinGroup()
+        {
+            SwitchToGroupsPanel();
+            JoinCodeInput = string.Empty;
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task CreateGroupAsync()
+        {
+            string groupName = NewGroupName;
+            Guid sessionId = _sessionService.SessionId;
+
+            if (string.IsNullOrWhiteSpace(groupName))
+            {
+                return;
+            }
+
+            try
+            {
+                if (!await SendCreateGroupRequestAsync(sessionId, groupName))
+                {
+                    await _dialogService.ShowAlertAsync("No se pudo crear", "Ocurrió un error al intentar crear el grupo. Inténtalo de nuevo.", "Ok");
+                    return;
+                }
+
+                await HandleCreateGroupSuccessAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating group: {ex.Message}");
+            }
+        }
+
+        private async Task<bool> SendCreateGroupRequestAsync(Guid sessionId, string name)
+        {
+            var request = new CreateGroupRequest
+            {
+                SessionId = sessionId,
+                Name = name.Trim()
+            };
+
+            return await _groupService.CreateGroupAsync(request);
+        }
+
+        private async Task HandleCreateGroupSuccessAsync()
+        {
+            await LoadCachedGroupsAsync();
+            _ = RefreshGroupsAsync();
+
+            await _dialogService.ShowAlertAsync("¡Listo!", "El grupo ha sido creado satisfactoriamente.", "Ok");
+
+            SwitchToGroupsPanel();
+            NewGroupName = string.Empty;
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task JoinGroupAsync()
+        {
+            string currentJoinCode = JoinCodeInput;
+            Guid currentSessionId = _sessionService.SessionId;
+
+            if (string.IsNullOrWhiteSpace(currentJoinCode))
+            {
+                return;
+            }
+
+            try
+            {
+                if (!await SendJoinGroupRequestAsync(currentSessionId, currentJoinCode))
+                {
+                    await _dialogService.ShowAlertAsync("No se pudo unir", "Ocurrió un error al intentar unirte al grupo. Verifica el código e inténtalo de nuevo.", "Ok");
+                    return;
+                }
+
+                await HandleJoinGroupSuccessAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error joining group: {ex.Message}");
+            }
+        }
+
+        private async Task<bool> SendJoinGroupRequestAsync(Guid sessionId, string joinCode)
+        {
+            var request = new JoinGroupRequest
+            {
+                SessionId = sessionId,
+                JoinCode = joinCode.Trim()
+            };
+
+            return await _groupService.JoinGroupAsync(request);
+        }
+
+        private async Task HandleJoinGroupSuccessAsync()
+        {
+            await LoadCachedGroupsAsync();
+            _ = RefreshGroupsAsync();
+
+            await _dialogService.ShowAlertAsync("¡Listo!", "Te has unido al grupo satisfactoriamente.", "Ok");
+
+            SwitchToGroupsPanel();
+            JoinCodeInput = string.Empty;
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task RegenerateJoinCodeAsync()
+        {
+            var groupId = SelectedGroupId;
+
+            try
+            {
+                var response = await RequestNewJoinCodeAsync();
+                if (response == null)
+                {
+                    await _dialogService.ShowAlertAsync("Error", "No se pudo regenerar el código. Inténtalo de nuevo.", "Ok");
+                    return;
+                }
+
+                await HandleRegenerateJoinCodeSuccessAsync(response, groupId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error regenerating join code: {ex.Message}");
+                await _dialogService.ShowAlertAsync("Error", "No se pudo regenerar el código. Inténtalo de nuevo.", "Ok");
+            }
+        }
+
+        private async Task<RegenerateJoinCodeResponse?> RequestNewJoinCodeAsync()
+        {
+            var request = new SessionIdRequest
+            {
+                SessionId = _sessionService.SessionId
+            };
+
+            return await _groupService.RegenerateJoinCodeAsync(SelectedGroupId, request);
+        }
+
+        private async Task HandleRegenerateJoinCodeSuccessAsync(RegenerateJoinCodeResponse response, int groupId)
+        {
+            ApplyNewJoinCode(response.JoinCode, groupId);
+
+            await SaveJoinCodeToCacheAsync(response, groupId);
+            await ShowNewJoinCodeDialogAsync(response);
+        }
+
+        private void ApplyNewJoinCode(string? joinCode, int groupId)
+        {
+            if (groupId != SelectedGroupId)
+            {
+                return;
+            }
+
+            SelectedGroupJoinCode = joinCode ?? string.Empty;
+            _preferencesService.Set(SelectedGroupJoinCodeKey, joinCode ?? string.Empty);
+        }
+
+        private async Task SaveJoinCodeToCacheAsync(RegenerateJoinCodeResponse response, int groupId)
+        {
+            var localGroup = await _groupRepository.GetGroupByIdAsync(groupId);
+            if (localGroup == null)
+            {
+                return;
+            }
+
+            localGroup.JoinCode = response.JoinCode;
+            localGroup.JoinCodeExpiresAt = response.JoinCodeExpiresAt;
+
+            await _groupRepository.SaveGroupAsync(localGroup);
+        }
+
+        private async Task ShowNewJoinCodeDialogAsync(RegenerateJoinCodeResponse response)
+        {
+            var localExpiresAt = ToLocalTime(response.JoinCodeExpiresAt);
+            var expirationText = localExpiresAt.HasValue
+                ? $"Expira el: {localExpiresAt.Value:dd/MM/yyyy HH:mm}"
+                : "No disponible";
+
+            await _dialogService.ShowAlertAsync("¡Listo!", $"El código de invitación ha sido regenerado.\n\nCódigo: {response.JoinCode}\n{expirationText}", "Ok");
         }
 
 
@@ -504,7 +964,7 @@ namespace Waybon.App.ViewModels
         // Mappers
         // ======================
 
-        private static List<GroupDetails> MapToGroupDetails(List<LocalGroup> groups)
+        private static List<GroupDetails> MapToGroupDetails(IEnumerable<LocalGroup> groups)
         {
             return
             [
@@ -538,7 +998,7 @@ namespace Waybon.App.ViewModels
             ];
         }
 
-        private static List<GroupMember> MapToGroupMembers(List<LocalMember> members)
+        private static List<GroupMember> MapToGroupMembers(IEnumerable<LocalMember> members)
         {
             return
             [

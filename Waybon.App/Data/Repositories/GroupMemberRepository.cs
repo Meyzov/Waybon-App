@@ -20,9 +20,9 @@ namespace Waybon.App.Data.Repositories
             );
         }
 
-        public Task<List<LocalMember>> GetMembersAsync(int groupId)
+        public async Task<IEnumerable<LocalMember>> GetMembersAsync(int groupId)
         {
-            return _db.Table<LocalMember>().Where(m => m.GroupId == groupId).ToListAsync();
+            return await _db.Table<LocalMember>().Where(m => m.GroupId == groupId).ToListAsync();
         }
 
         public Task ClearMembersAsync(int groupId)

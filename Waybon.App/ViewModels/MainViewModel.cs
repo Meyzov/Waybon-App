@@ -69,13 +69,13 @@ namespace Waybon.App.ViewModels
         [RelayCommand]
         private void SelectProfile() => SelectedTab = "Profile";
 
+        [RelayCommand]
+        private async Task InitializeMainAsync() => await LoadMapAsync();
+
 
         // ======================
         // Initialization
         // ======================
-
-        [RelayCommand]
-        public async Task InitializeMainAsync() => await LoadMapAsync();
 
         public async Task LoadMapAsync()
         {
@@ -98,6 +98,7 @@ namespace Waybon.App.ViewModels
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error loading map: {ex.Message}");
                 MapSource = new HtmlWebViewSource
                 {
                     Html = $"<html><body style='font-family:Georgia;padding:20px;color:#78716c;'><h1>Error</h1><p>{ex.Message}</p></body></html>"

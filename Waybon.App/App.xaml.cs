@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace Waybon.App
+﻿namespace Waybon.App
 {
     public partial class App : Application
     {

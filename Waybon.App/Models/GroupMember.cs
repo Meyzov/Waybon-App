@@ -1,23 +1,35 @@
-﻿using System.Text.Json.Serialization;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace Waybon.App.Models
 {
-    public class GroupMember
+    public partial class GroupMember : ObservableObject
     {
-        public Guid UserId { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public bool SharingEnabled { get; set; }
-        public bool BlockedByMe { get; set; }
-        public bool BlockingMe { get; set; }
-        public DateTime? LastActivityAt { get; set; }
+        [ObservableProperty]
+        public partial Guid UserId { get; set; }
+
+        [ObservableProperty]
+        public partial string Username { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial bool SharingEnabled { get; set; }
+
+        [ObservableProperty]
+        public partial bool BlockedByMe { get; set; }
+
+        [ObservableProperty]
+        public partial bool BlockingMe { get; set; }
+
+        [ObservableProperty]
+        public partial DateTime? LastActivityAt { get; set; }
 
         [JsonIgnore]
-        public string DisplayUsername { get; set; } = string.Empty;
+        [ObservableProperty]
+        public partial string DisplayUsername { get; set; } = string.Empty;
 
         [JsonIgnore]
-        public string LastActivityText { get; set; } = string.Empty;
-
-        [JsonIgnore]
-        public List<string> Tags { get; set; } = [];
+        [ObservableProperty]
+        public partial ObservableCollection<string> Tags { get; set; } = [];
     }
 }

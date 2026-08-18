@@ -1,18 +1,33 @@
-﻿using System.Text.Json.Serialization;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace Waybon.App.Models
 {
-    public class GroupDetails
+    public partial class GroupDetails : ObservableObject
     {
-        public int GroupId { get; set; }
-        public Guid OwnerUserId { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string? JoinCode { get; set; }
-        public DateTime? JoinCodeExpiresAt { get; set; }
-        public DateTime CreatedAt { get; set; }
+        [ObservableProperty]
+        public partial int GroupId { get; set; }
+
+        [ObservableProperty]
+        public partial Guid OwnerUserId { get; set; }
+
+        [ObservableProperty]
+        public partial string Username { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial string Name { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial string? JoinCode { get; set; }
+
+        [ObservableProperty]
+        public partial DateTime? JoinCodeExpiresAt { get; set; }
+
+        [ObservableProperty]
+        public partial DateTime CreatedAt { get; set; }
 
         [JsonIgnore]
-        public string DisplayUsername { get; set; } = string.Empty;
+        [ObservableProperty]
+        public partial string DisplayUsername { get; set; } = string.Empty;
     }
 }

@@ -8,11 +8,11 @@ namespace Waybon.App.Services.Implementations
     {
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<LoginResponse?> LoginAsync(LoginRequest request)
+        public async Task<LoginResponse?> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.PostAsJsonAsync
             (
-                "api/auth/login", request
+                "api/auth/login", request, cancellationToken
             );
 
             if (!response.IsSuccessStatusCode)
@@ -20,14 +20,14 @@ namespace Waybon.App.Services.Implementations
                 return null;
             }
 
-            return await response.Content.ReadFromJsonAsync<LoginResponse>();
+            return await response.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: cancellationToken);
         }
 
-        public async Task<bool> RegisterAsync(RegisterRequest request)
+        public async Task<bool> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.PostAsJsonAsync
             (
-                "api/auth/register", request
+                "api/auth/register", request, cancellationToken
             );
 
             if (!response.IsSuccessStatusCode)
@@ -35,7 +35,7 @@ namespace Waybon.App.Services.Implementations
                 return false;
             }
 
-            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>();
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken: cancellationToken);
             if (result == null)
             {
                 return false;

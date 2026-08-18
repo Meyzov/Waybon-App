@@ -4,9 +4,6 @@ namespace Waybon.App.Services.Implementations
 {
     public class NavigationService : INavigationService
     {
-        public Task GoToAsync(string route)
-        {
-            return Shell.Current.GoToAsync(route);
-        }
+        public Task GoToAsync(string route) => Shell.Current.GoToAsync(route);
     }
 }

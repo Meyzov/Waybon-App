@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Waybon.App.ViewModels"
+    x:Class="Waybon.App.Views.Components.ProfileSectionView"
+    x:DataType="vm:MainViewModel">
+
+    <Border
+        Style="{StaticResource CardBorder}"
+        Margin="16,16,16,16"
+        Padding="16">
+
+        <Grid
+            BindingContext="{Binding Profile}"
+            x:DataType="vm:ProfileViewModel"
+            RowDefinitions="Auto,*,Auto">
+
+            <VerticalStackLayout
+                Spacing="0">
+                <Border
+                    Style="{StaticResource SectionHeaderBorder}">
+                    <Label
+                        Text="Panel de Usuario"
+                        Style="{StaticResource SectionHeaderLabel}"/>
+                </Border>
+
+                <Border
+                    Style="{StaticResource CardBorderLight}"
+                    Padding="16"
+                    Margin="0,0,0,16">
+                    <HorizontalStackLayout
+                        Spacing="24"
+                        VerticalOptions="Center">
+                        <Border
+                            WidthRequest="70"
+                            HeightRequest="70"
+                            Style="{StaticResource IconContainer}"
+                            HorizontalOptions="Start"
+                            VerticalOptions="Center">
+                            <Path
+                                Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                Fill="{StaticResource Stone400}"
+                                Aspect="Uniform"
+                                HeightRequest="32"
+                                WidthRequest="40"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                        </Border>
+
+                        <VerticalStackLayout
+                            VerticalOptions="Center"
+                            Spacing="0">
+                            <Label
+                                Text="{Binding Username}"
+                                FontFamily="Text-Variable"
+                                FontSize="24"
+                                TextColor="{StaticResource Stone800}"/>
+                            <Label
+                                Text="{Binding RoleName}"
+                                FontFamily="Text-Variable"
+                                FontSize="16"
+                                TextColor="{StaticResource Stone600}"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <BoxView
+                    Style="{StaticResource Divider}"
+                    Margin="0,0,0,16"/>
+            </VerticalStackLayout>
+
+            <ScrollView
+                Grid.Row="1">
+                <VerticalStackLayout
+                    Spacing="16"
+                    VerticalOptions="Start">
+                    <Border
+                        Style="{StaticResource CardBorderLight}"
+                        Padding="16">
+                        <Grid
+                            ColumnDefinitions="*,Auto"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="Compartir ubicación"
+                                FontFamily="Text-Variable"
+                                FontSize="16"
+                                TextColor="{StaticResource Stone600}"
+                                VerticalOptions="Center"/>
+
+                            <Grid
+                                Grid.Column="1"
+                                WidthRequest="56"
+                                HeightRequest="32"
+                                VerticalOptions="Center">
+                                <Border
+                                    Stroke="{StaticResource Stone400}"
+                                    StrokeThickness="1"
+                                    BackgroundColor="{StaticResource Stone200}">
+                                    <Border.Triggers>
+                                        <DataTrigger
+                                            TargetType="Border"
+                                            Binding="{Binding IsSharingEnabled}"
+                                            Value="True">
+                                            <Setter
+                                                Property="BackgroundColor"
+                                                Value="{StaticResource Stone800}"/>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+
+                                    <Border
+                                        WidthRequest="28"
+                                        HeightRequest="28"
+                                        BackgroundColor="{StaticResource White}"
+                                        Stroke="{StaticResource Stone400}"
+                                        StrokeThickness="1"
+                                        HorizontalOptions="Start"
+                                        VerticalOptions="Center"
+                                        Margin="1,0,0,0">
+                                        <Border.Triggers>
+                                            <DataTrigger
+                                                TargetType="Border"
+                                                Binding="{Binding IsSharingEnabled}"
+                                                Value="True">
+                                                <Setter
+                                                    Property="HorizontalOptions"
+                                                    Value="End"/>
+                                                <Setter
+                                                    Property="Margin"
+                                                    Value="0,0,1,0"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                    </Border>
+                                </Border>
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding ToggleSharingCommand}"/>
+                                </Grid.GestureRecognizers>
+                            </Grid>
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding ToggleSharingCommand}"/>
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <VerticalStackLayout
+                Grid.Row="2"
+                Spacing="0">
+                <BoxView
+                    Style="{StaticResource Divider}"
+                    Margin="0,16,0,16"/>
+                <Button
+                    Text="Cerrar Sesión"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding LogoutCommand}"/>
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

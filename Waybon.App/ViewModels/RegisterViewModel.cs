@@ -48,7 +48,7 @@ namespace Waybon.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(RoleName))
             {
-                await _dialogService.ShowAlertAsync("Error", "Completa todos los campos.", "OK");
+                await _dialogService.ShowAlertAsync("Error", "Completa todos los campos.", "Ok");
                 return;
             }
 
@@ -67,16 +67,17 @@ namespace Waybon.App.ViewModels
                 var success = await _authService.RegisterAsync(request);
                 if (!success)
                 {
-                    await _dialogService.ShowAlertAsync("Error", "No se pudo completar el registro. Inténtalo de nuevo.", "OK");
+                    await _dialogService.ShowAlertAsync("Error", "No se pudo completar el registro. Inténtalo de nuevo.", "Ok");
                     return;
                 }
 
-                await _dialogService.ShowAlertAsync("Éxito", "¡Registro exitoso! Ahora puedes iniciar sesión.", "OK");
+                await _dialogService.ShowAlertAsync("Éxito", "¡Registro exitoso! Ahora puedes iniciar sesión.", "Ok");
                 await _navigationService.GoToAsync("//login");
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowAlertAsync("Error", $"No se pudo conectar: {ex.Message}", "OK");
+                System.Diagnostics.Debug.WriteLine($"Error registering: {ex.Message}");
+                await _dialogService.ShowAlertAsync("Error", $"No se pudo conectar: {ex.Message}", "Ok");
             }
             finally
             {

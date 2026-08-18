@@ -3,6 +3,8 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
+using CommunityToolkit.Maui.Core.Services;
+using Waybon.App.Platforms.Android.Services;
 
 namespace Waybon.App.Platforms.Android
 {
@@ -25,6 +27,8 @@ namespace Waybon.App.Platforms.Android
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
+            SupportFragmentManager.RegisterFragmentLifecycleCallbacks(new FragmentLifecycleManager(new ImmersiveDialogFragmentService()), false);
             ApplyImmersiveMode();
         }
 
@@ -39,7 +43,7 @@ namespace Waybon.App.Platforms.Android
 
         private void ApplyImmersiveMode()
         {
-            if (Window is null)
+            if (Window == null)
             {
                 return;
             }

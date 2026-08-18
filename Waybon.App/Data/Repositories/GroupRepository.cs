@@ -20,9 +20,19 @@ namespace Waybon.App.Data.Repositories
             );
         }
 
-        public Task<List<LocalGroup>> GetGroupsAsync()
+        public async Task<IEnumerable<LocalGroup>> GetGroupsAsync()
         {
-            return _db.Table<LocalGroup>().ToListAsync();
+            return await _db.Table<LocalGroup>().ToListAsync();
+        }
+
+        public async Task<LocalGroup?> GetGroupByIdAsync(int groupId)
+        {
+            return await _db.Table<LocalGroup>().Where(g => g.GroupId == groupId).FirstOrDefaultAsync();
+        }
+
+        public Task SaveGroupAsync(LocalGroup group)
+        {
+            return _db.InsertOrReplaceAsync(group);
         }
 
         public Task ClearAllGroupsAsync()

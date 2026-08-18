@@ -21,18 +21,23 @@ namespace Waybon.App
             (
                 fonts =>
                 {
-                    fonts.AddFont("PTSerif-Regular.ttf", "PTSerifRegular");
-                    fonts.AddFont("PTSerif-Bold.ttf", "PTSerifBold");
+                    fonts.AddFont("Merriweather-VariableFont.ttf", "Text-Variable");
                 }
             );
 
-            // --- Data ---
+            // ======================
+            // Data
+            // ======================
+
             builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
             builder.Services.AddSingleton<IGroupRepository, GroupRepository>();
             builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
             builder.Services.AddSingleton<ILocationRepository, LocationRepository>();
 
-            // --- Singletons ---
+            // ======================
+            // Singletons
+            // ======================
+
             builder.Services.AddSingleton<IPreferencesService, PreferencesService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
@@ -68,16 +73,21 @@ namespace Waybon.App
             )
             .AddHttpMessageHandler<SigningHandler>();
 
-            // --- ViewModels ---
+            // ======================
+            // ViewModels
+            // ======================
+
             builder.Services.AddTransient<LoadingViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<GroupViewModel>();
             builder.Services.AddTransient<MainViewModel>();
-            
 
-            // --- Views ---
+            // ======================
+            // Views
+            // ======================
+
             builder.Services.AddTransient<LoadingPage>();
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<RegisterPage>();
