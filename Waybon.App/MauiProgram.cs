@@ -21,7 +21,7 @@ namespace Waybon.App
             (
                 fonts =>
                 {
-                    fonts.AddFont("Merriweather-VariableFont.ttf", "Text-Variable");
+                    fonts.AddFont("Lora-VariableFont_wght.ttf", "Text-Variable");
                 }
             );
 

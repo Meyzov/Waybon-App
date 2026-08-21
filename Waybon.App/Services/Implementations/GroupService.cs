@@ -94,5 +94,47 @@ namespace Waybon.App.Services.Implementations
 
             return await response.Content.ReadFromJsonAsync<RegenerateJoinCodeResponse>(cancellationToken);
         }
+
+        public async Task<bool> DeleteGroupAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                $"api/groups/{groupId}/delete", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
+
+        public async Task<bool> LeaveGroupAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                $"api/groups/{groupId}/leave", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
     }
 }

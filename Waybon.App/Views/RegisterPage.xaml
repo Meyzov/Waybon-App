@@ -17,25 +17,26 @@
             <Border Style="{StaticResource CardBorder}" 
                     HorizontalOptions="Fill"
                     MaximumWidthRequest="420"
-                    Margin="16,0">
+                    Margin="16,0"
+                    Padding="16">
 
                 <VerticalStackLayout Spacing="0">
 
                     <!-- Section header -->
-                    <Border Style="{StaticResource SectionHeaderBorder}">
+                    <Border Style="{StaticResource SectionHeaderBorder}" Margin="0,0,0,16">
                         <Label
                             Text="Registro"
                             Style="{StaticResource SectionHeaderLabel}"/>
                     </Border>
 
-                    <!-- Form content -->
-                    <VerticalStackLayout Spacing="0">
+                    <!-- Container -->
+                    <VerticalStackLayout Spacing="16">
 
                         <!-- Username field -->
-                        <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
+                        <VerticalStackLayout Spacing="4">
                             <Label Text="Nombre de usuario" Style="{StaticResource FormLabel}"/>
 
-                            <Border Style="{StaticResource FormFieldBorder}">
+                            <Border Style="{StaticResource FormFieldBorder}" Padding="8,0">
                                 <Entry
                                     Text="{Binding Username}"
                                     Style="{StaticResource FormEntry}"
@@ -44,10 +45,10 @@
                         </VerticalStackLayout>
 
                         <!-- Email field -->
-                        <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
+                        <VerticalStackLayout Spacing="4">
                             <Label Text="Email" Style="{StaticResource FormLabel}"/>
 
-                            <Border Style="{StaticResource FormFieldBorder}">
+                            <Border Style="{StaticResource FormFieldBorder}" Padding="8,0">
                                 <Entry
                                     Text="{Binding Email}"
                                     Keyboard="Email"
@@ -57,7 +58,7 @@
                         </VerticalStackLayout>
 
                         <!-- Password field -->
-                        <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
+                        <VerticalStackLayout Spacing="4">
                             <Label Text="Contraseña" Style="{StaticResource FormLabel}"/>
 
                             <Border Style="{StaticResource FormFieldBorder}" Padding="0">
@@ -110,34 +111,34 @@
                         </VerticalStackLayout>
 
                         <!-- Role field -->
-                        <VerticalStackLayout Spacing="4" Margin="0,0,0,24">
+                        <VerticalStackLayout Spacing="4">
                             <Label Text="Rol" Style="{StaticResource FormLabel}"/>
 
-                            <Border Style="{StaticResource FormFieldBorder}">
+                            <Border Style="{StaticResource FormFieldBorder}" Padding="8,0">
                                 <Entry
                                     Text="{Binding RoleName}"
                                     Style="{StaticResource FormEntry}"
                                     Placeholder="Rol de usuario"/>
                             </Border>
                         </VerticalStackLayout>
+                    </VerticalStackLayout>
 
-                        <!-- Divider -->
-                        <BoxView Style="{StaticResource Divider}" Margin="0,0,0,20"/>
+                    <!-- Divider -->
+                    <BoxView Style="{StaticResource Divider}" Margin="0,16,0,16"/>
 
-                        <!-- Action buttons -->
+                    <!-- Action buttons -->
+                    <VerticalStackLayout Spacing="16">
                         <Button
                             Text="{Binding RegisterButtonText}"
                             Style="{StaticResource PrimaryButton}"
-                            Margin="0,0,0,12"
                             Command="{Binding RegisterCommand}"/>
 
                         <Button
                             Text="Volver a iniciar sesión"
                             Style="{StaticResource SecondaryButton}"
-                            Margin="0,0,0,0"
                             Command="{Binding NavigateToLoginCommand}"/>
-
                     </VerticalStackLayout>
+
                 </VerticalStackLayout>
             </Border>
         </Grid>

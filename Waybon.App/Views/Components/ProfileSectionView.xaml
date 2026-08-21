@@ -8,7 +8,7 @@
 
     <Border
         Style="{StaticResource CardBorder}"
-        Margin="16,16,16,16"
+        Margin="16"
         Padding="16">
 
         <Grid
@@ -18,8 +18,11 @@
 
             <VerticalStackLayout
                 Spacing="0">
+
                 <Border
-                    Style="{StaticResource SectionHeaderBorder}">
+                    Style="{StaticResource SectionHeaderBorder}"
+                    Margin="0,0,0,16">
+                    
                     <Label
                         Text="Panel de Usuario"
                         Style="{StaticResource SectionHeaderLabel}"/>
@@ -29,15 +32,18 @@
                     Style="{StaticResource CardBorderLight}"
                     Padding="16"
                     Margin="0,0,0,16">
+                    
                     <HorizontalStackLayout
-                        Spacing="24"
+                        Spacing="16"
                         VerticalOptions="Center">
+                        
                         <Border
                             WidthRequest="70"
                             HeightRequest="70"
                             Style="{StaticResource IconContainer}"
                             HorizontalOptions="Start"
                             VerticalOptions="Center">
+                            
                             <Path
                                 Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
                                 Fill="{StaticResource Stone400}"
@@ -51,15 +57,17 @@
                         <VerticalStackLayout
                             VerticalOptions="Center"
                             Spacing="0">
+                            
                             <Label
                                 Text="{Binding Username}"
                                 FontFamily="Text-Variable"
                                 FontSize="24"
                                 TextColor="{StaticResource Stone800}"/>
+                            
                             <Label
                                 Text="{Binding RoleName}"
                                 FontFamily="Text-Variable"
-                                FontSize="16"
+                                FontSize="14"
                                 TextColor="{StaticResource Stone600}"/>
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
@@ -72,12 +80,15 @@
 
             <ScrollView
                 Grid.Row="1">
+                
                 <VerticalStackLayout
                     Spacing="16"
                     VerticalOptions="Start">
+                    
                     <Border
                         Style="{StaticResource CardBorderLight}"
                         Padding="16">
+                        
                         <Grid
                             ColumnDefinitions="*,Auto"
                             VerticalOptions="Center">
@@ -94,10 +105,13 @@
                                 WidthRequest="56"
                                 HeightRequest="32"
                                 VerticalOptions="Center">
+                                
                                 <Border
                                     Stroke="{StaticResource Stone400}"
                                     StrokeThickness="1"
-                                    BackgroundColor="{StaticResource Stone200}">
+                                    BackgroundColor="{StaticResource Stone200}"
+                                    StrokeShape="Rectangle">
+                                    
                                     <Border.Triggers>
                                         <DataTrigger
                                             TargetType="Border"
@@ -117,7 +131,9 @@
                                         StrokeThickness="1"
                                         HorizontalOptions="Start"
                                         VerticalOptions="Center"
-                                        Margin="1,0,0,0">
+                                        Margin="1,0,0,0"
+                                        StrokeShape="Rectangle">
+                                        
                                         <Border.Triggers>
                                             <DataTrigger
                                                 TargetType="Border"

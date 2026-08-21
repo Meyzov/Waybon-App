@@ -71,6 +71,9 @@ namespace Waybon.App.ViewModels
         [ObservableProperty]
         public partial bool IsJoinGroupPanelVisible { get; set; }
 
+        [ObservableProperty]
+        public partial bool IsGroupSettingsVisible { get; set; }
+
 
         // ======================
         // Selected Group
@@ -135,6 +138,7 @@ namespace Waybon.App.ViewModels
             AreMembersVisible = false;
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = false;
+            IsGroupSettingsVisible = false;
         }
 
         private void SwitchToMembersPanel()
@@ -143,6 +147,7 @@ namespace Waybon.App.ViewModels
             AreMembersVisible = true;
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = false;
+            IsGroupSettingsVisible = false;
         }
 
         private void SwitchToCreateGroupPanel()
@@ -151,6 +156,7 @@ namespace Waybon.App.ViewModels
             AreMembersVisible = false;
             IsCreateGroupPanelVisible = true;
             IsJoinGroupPanelVisible = false;
+            IsGroupSettingsVisible = false;
         }
 
         private void SwitchToJoinGroupPanel()
@@ -159,6 +165,16 @@ namespace Waybon.App.ViewModels
             AreMembersVisible = false;
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = true;
+            IsGroupSettingsVisible = false;
+        }
+
+        private void SwitchToGroupSettingsPanel()
+        {
+            AreGroupsVisible = false;
+            AreMembersVisible = false;
+            IsCreateGroupPanelVisible = false;
+            IsJoinGroupPanelVisible = false;
+            IsGroupSettingsVisible = true;
         }
 
 
@@ -785,6 +801,18 @@ namespace Waybon.App.ViewModels
             JoinCodeInput = string.Empty;
         }
 
+        [RelayCommand]
+        private void ShowGroupSettings()
+        {
+            SwitchToGroupSettingsPanel();
+        }
+
+        [RelayCommand]
+        private void HideGroupSettings()
+        {
+            SwitchToMembersPanel();
+        }
+
         [RelayCommand(AllowConcurrentExecutions = false)]
         private async Task CreateGroupAsync()
         {
@@ -957,6 +985,94 @@ namespace Waybon.App.ViewModels
                 : "No disponible";
 
             await _dialogService.ShowAlertAsync("¡Listo!", $"El código de invitación ha sido regenerado.\n\nCódigo: {response.JoinCode}\n{expirationText}", "Ok");
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task DeleteGroupAsync()
+        {
+            bool confirm = await _dialogService.ShowConfirmAsync("Eliminar grupo", "¿Estás seguro de que deseas eliminar este grupo?\n\nEsta acción eliminará el grupo y todos sus miembros de forma permanente.", "Eliminar", "Cancelar");
+            if (!confirm)
+            {
+                return;
+            }
+
+            int groupId = SelectedGroupId;
+            Guid sessionId = _sessionService.SessionId;
+
+            try
+            {
+                if (!await SendDeleteGroupRequestAsync(groupId, sessionId))
+                {
+                    await _dialogService.ShowAlertAsync("No se pudo eliminar", "Ocurrió un error al intentar eliminar el grupo. Inténtalo de nuevo.", "Ok");
+                    return;
+                }
+
+                await HandleDeleteGroupSuccessAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error deleting group: {ex.Message}");
+            }
+        }
+
+        private async Task<bool> SendDeleteGroupRequestAsync(int groupId, Guid sessionId)
+        {
+            var request = new SessionIdRequest
+            {
+                SessionId = sessionId
+            };
+
+            return await _groupService.DeleteGroupAsync(groupId, request);
+        }
+
+        private async Task HandleDeleteGroupSuccessAsync()
+        {
+            await _dialogService.ShowAlertAsync("¡Listo!", "El grupo ha sido eliminado satisfactoriamente.", "Ok");
+            await BackToGroupsAsync();
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task LeaveGroupAsync()
+        {
+            bool confirm = await _dialogService.ShowConfirmAsync("Abandonar grupo", "¿Estás seguro de que deseas abandonar este grupo? Ya no tendrás acceso a él.", "Salir", "Cancelar");
+            if (!confirm)
+            {
+                return;
+            }
+
+            int groupId = SelectedGroupId;
+            Guid sessionId = _sessionService.SessionId;
+
+            try
+            {
+                if (!await SendLeaveGroupRequestAsync(groupId, sessionId))
+                {
+                    await _dialogService.ShowAlertAsync("No se pudo salir", "Ocurrió un error al intentar abandonar el grupo. Inténtalo de nuevo.", "Ok");
+                    return;
+                }
+
+                await HandleLeaveGroupSuccessAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error leaving group: {ex.Message}");
+            }
+        }
+
+        private async Task<bool> SendLeaveGroupRequestAsync(int groupId, Guid sessionId)
+        {
+            var request = new SessionIdRequest
+            {
+                SessionId = sessionId
+            };
+
+            return await _groupService.LeaveGroupAsync(groupId, request);
+        }
+
+        private async Task HandleLeaveGroupSuccessAsync()
+        {
+            await _dialogService.ShowAlertAsync("¡Listo!", "Has abandonado el grupo satisfactoriamente.", "Ok");
+            await BackToGroupsAsync();
         }
 
 

@@ -31,13 +31,13 @@ public partial class CustomAlertPopup : Popup
 
     public Task<bool> ResultAsync() => _tcs.Task;
 
-    private async void OnCancelClicked(object sender, EventArgs e)
+    private async void OnCancelClicked(object? sender, EventArgs e)
     {
         _tcs.TrySetResult(false);
         await CloseAsync();
     }
 
-    private async void OnAcceptClicked(object sender, EventArgs e)
+    private async void OnAcceptClicked(object? sender, EventArgs e)
     {
         _tcs.TrySetResult(true);
         await CloseAsync();

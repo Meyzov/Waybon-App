@@ -17,12 +17,13 @@
             <Border Style="{StaticResource CardBorder}" 
                     HorizontalOptions="Fill"
                     MaximumWidthRequest="420"
-                    Margin="16,0">
+                    Margin="16,0"
+                    Padding="16">
 
                 <VerticalStackLayout Spacing="0">
 
                     <!-- Section header -->
-                    <Border Style="{StaticResource SectionHeaderBorder}">
+                    <Border Style="{StaticResource SectionHeaderBorder}" Margin="0,0,0,16">
                         <Label
                             Text="Iniciar Sesión"
                             Style="{StaticResource SectionHeaderLabel}"/>
@@ -35,7 +36,7 @@
                         <VerticalStackLayout Spacing="4" Margin="0,0,0,16">
                             <Label Text="Correo electrónico" Style="{StaticResource FormLabel}"/>
 
-                            <Border Style="{StaticResource FormFieldBorder}">
+                            <Border Style="{StaticResource FormFieldBorder}" Padding="8,0">
                                 <Entry
                                     Text="{Binding Email}"
                                     Keyboard="Email"
@@ -46,7 +47,7 @@
                         </VerticalStackLayout>
 
                         <!-- Password field -->
-                        <VerticalStackLayout Spacing="0" Margin="0,0,0,24">
+                        <VerticalStackLayout Spacing="0" Margin="0,0,0,16">
                             <Label Text="Contraseña" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
 
                             <Border Style="{StaticResource FormFieldBorder}" Padding="0">
@@ -108,13 +109,13 @@
                         </VerticalStackLayout>
 
                         <!-- Divider -->
-                        <BoxView Style="{StaticResource Divider}" Margin="0,0,0,20"/>
+                        <BoxView Style="{StaticResource Divider}" Margin="0,0,0,16"/>
 
                         <!-- Action buttons -->
                         <Button
                             Text="{Binding LoginButtonText}"
                             Style="{StaticResource PrimaryButton}"
-                            Margin="0,0,0,12"
+                            Margin="0,0,0,16"
                             Command="{Binding LoginCommand}"/>
 
                         <Button
