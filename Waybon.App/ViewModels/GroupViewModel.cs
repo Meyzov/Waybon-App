@@ -8,13 +8,14 @@ using Waybon.App.Services.Interfaces;
 
 namespace Waybon.App.ViewModels
 {
-    public partial class GroupViewModel(ISessionService sessionService, IGroupService groupService, IPreferencesService preferencesService, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository, IDialogService dialogService) : ObservableObject
+    public partial class GroupViewModel(ISessionService sessionService, IGroupService groupService, IPreferencesService preferencesService, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository, IUserService userService, IDialogService dialogService) : ObservableObject
     {
         private readonly ISessionService _sessionService = sessionService;
         private readonly IGroupService _groupService = groupService;
         private readonly IPreferencesService _preferencesService = preferencesService;
         private readonly IGroupRepository _groupRepository = groupRepository;
         private readonly IGroupMemberRepository _groupMemberRepository = groupMemberRepository;
+        private readonly IUserService _userService = userService;
         private readonly IDialogService _dialogService = dialogService;
 
         private const string SelectedGroupIdKey = "waybon_selectedGroupId";
@@ -74,6 +75,9 @@ namespace Waybon.App.ViewModels
         [ObservableProperty]
         public partial bool IsGroupSettingsVisible { get; set; }
 
+        [ObservableProperty]
+        public partial bool IsMemberSettingsVisible { get; set; }
+
 
         // ======================
         // Selected Group
@@ -129,6 +133,20 @@ namespace Waybon.App.ViewModels
 
 
         // ======================
+        // Selected Member
+        // ======================
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsSelectedMemberOwner))]
+        public partial GroupMember? SelectedMember { get; set; }
+
+        public bool IsSelectedMemberOwner => SelectedMember != null && SelectedMember.UserId == _sessionService.UserId;
+
+        [ObservableProperty]
+        public partial string SelectedMemberBlockButtonText { get; set; } = "Bloquear";
+
+
+        // ======================
         // Panel Switching
         // ======================
 
@@ -139,6 +157,7 @@ namespace Waybon.App.ViewModels
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = false;
             IsGroupSettingsVisible = false;
+            IsMemberSettingsVisible = false;
         }
 
         private void SwitchToMembersPanel()
@@ -148,6 +167,7 @@ namespace Waybon.App.ViewModels
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = false;
             IsGroupSettingsVisible = false;
+            IsMemberSettingsVisible = false;
         }
 
         private void SwitchToCreateGroupPanel()
@@ -157,6 +177,7 @@ namespace Waybon.App.ViewModels
             IsCreateGroupPanelVisible = true;
             IsJoinGroupPanelVisible = false;
             IsGroupSettingsVisible = false;
+            IsMemberSettingsVisible = false;
         }
 
         private void SwitchToJoinGroupPanel()
@@ -166,6 +187,7 @@ namespace Waybon.App.ViewModels
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = true;
             IsGroupSettingsVisible = false;
+            IsMemberSettingsVisible = false;
         }
 
         private void SwitchToGroupSettingsPanel()
@@ -175,6 +197,17 @@ namespace Waybon.App.ViewModels
             IsCreateGroupPanelVisible = false;
             IsJoinGroupPanelVisible = false;
             IsGroupSettingsVisible = true;
+            IsMemberSettingsVisible = false;
+        }
+
+        private void SwitchToMemberSettingsPanel()
+        {
+            AreGroupsVisible = false;
+            AreMembersVisible = false;
+            IsCreateGroupPanelVisible = false;
+            IsJoinGroupPanelVisible = false;
+            IsGroupSettingsVisible = false;
+            IsMemberSettingsVisible = true;
         }
 
 
@@ -498,6 +531,7 @@ namespace Waybon.App.ViewModels
                     {
                         existingMember.Username = member.Username;
                         existingMember.DisplayUsername = member.DisplayUsername;
+                        existingMember.RoleName = member.RoleName;
                         existingMember.SharingEnabled = member.SharingEnabled;
                         existingMember.BlockedByMe = member.BlockedByMe;
                         existingMember.BlockingMe = member.BlockingMe;
@@ -586,6 +620,7 @@ namespace Waybon.App.ViewModels
                     {
                         existingMember.Username = member.Username;
                         existingMember.DisplayUsername = member.DisplayUsername;
+                        existingMember.RoleName = member.RoleName;
                         existingMember.SharingEnabled = member.SharingEnabled;
                         existingMember.BlockedByMe = member.BlockedByMe;
                         existingMember.BlockingMe = member.BlockingMe;
@@ -683,6 +718,7 @@ namespace Waybon.App.ViewModels
                 member.DisplayUsername = BuildMemberDisplayName(currentUserId, selectedGroupOwnerId, member);
                 member.LastActivityAt = ToLocalTime(member.LastActivityAt);
                 BuildMemberTags(member);
+                member.IsCurrentUser = member.UserId == currentUserId;
             }
         }
 
@@ -1034,7 +1070,7 @@ namespace Waybon.App.ViewModels
         [RelayCommand(AllowConcurrentExecutions = false)]
         private async Task LeaveGroupAsync()
         {
-            bool confirm = await _dialogService.ShowConfirmAsync("Abandonar grupo", "¿Estás seguro de que deseas abandonar este grupo? Ya no tendrás acceso a él.", "Salir", "Cancelar");
+            bool confirm = await _dialogService.ShowConfirmAsync("Abandonar grupo", "¿Estás seguro de que deseas abandonar este grupo?\n\nYa no tendrás acceso a él.", "Salir", "Cancelar");
             if (!confirm)
             {
                 return;
@@ -1075,6 +1111,188 @@ namespace Waybon.App.ViewModels
             await BackToGroupsAsync();
         }
 
+        // ======================
+        // Selected Member
+        // ======================
+
+        [RelayCommand]
+        private void SelectMember(GroupMember member)
+        {
+            if (member == null)
+            {
+                return;
+            }
+
+            SelectedMember = member;
+
+            UpdateBlockButtonText();
+            SwitchToMemberSettingsPanel();
+        }
+
+        private void UpdateBlockButtonText()
+        {
+            if (SelectedMember == null)
+            {
+                return;
+            }
+
+            SelectedMemberBlockButtonText = SelectedMember.BlockedByMe ? "Desbloquear" : "Bloquear";
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task ToggleBlockMemberAsync()
+        {
+            if (SelectedMember == null)
+            {
+                return;
+            }
+
+            Guid userId = SelectedMember.UserId;
+            Guid sessionId = _sessionService.SessionId;
+            bool success;
+
+            try
+            {
+                if (SelectedMember.BlockedByMe)
+                {
+                    success = await SendToggleBlockMemberRequestAsync(true, userId, sessionId);
+                    if (!success)
+                    {
+                        await _dialogService.ShowAlertAsync("Error", "No se pudo desbloquear al usuario. Inténtalo de nuevo.", "Ok");
+                        return;
+                    }
+
+                    await HandleToggleBlockMemberSuccessAsync(true);
+                }
+                else
+                {
+                    success = await SendToggleBlockMemberRequestAsync(false, userId, sessionId);
+                    if (!success)
+                    {
+                        await _dialogService.ShowAlertAsync("Error", "No se pudo bloquear al usuario. Inténtalo de nuevo.", "Ok");
+                        return;
+                    }
+
+                    await HandleToggleBlockMemberSuccessAsync(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error toggling block member: {ex.Message}");
+                await _dialogService.ShowAlertAsync("Error", "Ocurrió un error inesperado. Inténtalo de nuevo más tarde.", "Ok");
+            }
+        }
+
+        private async Task<bool> SendToggleBlockMemberRequestAsync(bool isUnblocking, Guid userId, Guid sessionId)
+        {
+            var request = new TargetUserRequest
+            {
+                SessionId = sessionId,
+                TargetUserId = userId
+            };
+
+            if (isUnblocking)
+            {
+                return await _userService.UnblockUserAsync(request);
+            }
+            else
+            {
+                return await _userService.BlockUserAsync(request);
+            }
+        }
+
+        private async Task HandleToggleBlockMemberSuccessAsync(bool isUnblocking)
+        {
+            if (SelectedMember == null)
+            {
+                return;
+            }
+
+            string message;
+            if (isUnblocking)
+            {
+                SelectedMember.BlockedByMe = false;
+                UpdateBlockButtonText();
+                message = $"Has desbloqueado a {SelectedMember.Username}.";
+            }
+            else
+            {
+                SelectedMember.BlockedByMe = true;
+                UpdateBlockButtonText();
+                message = $"Has bloqueado a {SelectedMember.Username}.";
+            }
+
+            BuildMemberTags(SelectedMember);
+            await _dialogService.ShowAlertAsync("¡Listo!", message, "Ok");
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task KickMemberAsync()
+        {
+            if (SelectedMember == null)
+            {
+                return;
+            }
+
+            Guid userId = SelectedMember.UserId;
+            Guid sessionId = _sessionService.SessionId;
+            int groupId = SelectedGroupId;
+
+            bool confirm = await _dialogService.ShowConfirmAsync("Expulsar", $"¿Estás seguro de expulsar a {SelectedMember.DisplayUsername} del grupo?", "Sí", "No");
+            if (!confirm)
+            {
+                return;
+            }
+
+            try
+            {
+                bool success = await SendKickMemberRequestAsync(userId, sessionId, groupId);
+                if (!success)
+                {
+                    await _dialogService.ShowAlertAsync("No se pudo expulsar", "Ocurrió un error al intentar expulsar al usuario. Inténtalo de nuevo.", "Ok");
+                    return;
+                }
+
+                await HandleKickMemberSuccessAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error kicking member: {ex.Message}");
+                await _dialogService.ShowAlertAsync("Error", "Ocurrió un error inesperado. Inténtalo de nuevo más tarde.", "Ok");
+            }
+        }
+
+        private async Task<bool> SendKickMemberRequestAsync(Guid userId, Guid sessionId, int groupId)
+        {
+            var request = new TargetUserRequest
+            {
+                SessionId = sessionId,
+                TargetUserId = userId
+            };
+
+            return await _groupService.KickMemberAsync(groupId, request);
+        }
+
+        private async Task HandleKickMemberSuccessAsync()
+        {
+            if (SelectedMember == null)
+            {
+                return;
+            }
+
+            await LoadCachedMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
+            _ = RefreshMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
+
+            await _dialogService.ShowAlertAsync("¡Listo!", $"Has expulsado a {SelectedMember.DisplayUsername} del grupo.", "Ok");
+            BackToMembers();
+        }
+
+        [RelayCommand]
+        private void BackToMembers()
+        {
+            SwitchToMembersPanel();
+            SelectedMember = null;
+        }
 
         // ======================
         // Mappers

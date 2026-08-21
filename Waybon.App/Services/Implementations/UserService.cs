@@ -28,5 +28,47 @@ namespace Waybon.App.Services.Implementations
 
             return result.Success;
         }
+
+        public async Task<bool> BlockUserAsync(TargetUserRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                "api/user/block", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
+
+        public async Task<bool> UnblockUserAsync(TargetUserRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                "api/user/unblock", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
     }
 }

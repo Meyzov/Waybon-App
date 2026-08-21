@@ -68,7 +68,8 @@
                         FontSize="16"
                         TextColor="{StaticResource Stone500}"
                         HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="Center"/>
 
                     <CollectionView
                         ItemsSource="{Binding JoinedGroups}"
@@ -203,7 +204,8 @@
                         FontSize="16"
                         TextColor="{StaticResource Stone500}"
                         HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="Center"/>
                 </Grid>
             </Grid>
 
@@ -235,7 +237,8 @@
                         FontSize="16"
                         TextColor="{StaticResource Stone500}"
                         HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="Center"/>
 
                     <CollectionView
                         ItemsSource="{Binding GroupMembers}"
@@ -254,13 +257,22 @@
                                 x:DataType="models:GroupMember">
                                 <Border
                                     Style="{StaticResource CardBorderLight}"
-                                    Padding="16">
+                                    Padding="16"
+                                    InputTransparent="{Binding IsCurrentUser}">
+
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupViewModel}}, Path=SelectMemberCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+                        
                                     <VerticalStackLayout
                                         Spacing="0">
 
-                                        <HorizontalStackLayout
-                                            Spacing="16">
+                                        <Grid
+                                            ColumnDefinitions="Auto,*,Auto">
                                             <Border
+                                                Grid.Column="0"
                                                 WidthRequest="50"
                                                 HeightRequest="50"
                                                 Style="{StaticResource IconContainer}"
@@ -276,12 +288,24 @@
                                                     VerticalOptions="Center"/>
                                             </Border>
                                             <Label
+                                                Grid.Column="1"
                                                 Text="{Binding DisplayUsername}"
                                                 FontFamily="Text-Variable"
                                                 FontSize="16"
                                                 TextColor="{StaticResource Stone700}"
-                                                VerticalOptions="Center"/>
-                                        </HorizontalStackLayout>
+                                                VerticalOptions="Center"
+                                                Margin="16,0,0,0"/>
+                                            <Path
+                                                Grid.Column="2"
+                                                Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"
+                                                Fill="{StaticResource Stone400}"
+                                                Aspect="Uniform"
+                                                HeightRequest="16"
+                                                WidthRequest="15"
+                                                VerticalOptions="Center"
+                                                HorizontalOptions="End"
+                                                IsVisible="{Binding IsCurrentUser, Converter={StaticResource InvertedBoolConverter}}"/>
+                                        </Grid>
 
                                         <BoxView
                                             Style="{StaticResource Divider}"
@@ -305,15 +329,17 @@
                                                             StrokeThickness="1"
                                                             StrokeShape="Rectangle"
                                                             Padding="12,8"
-                                                            Margin="0,0,16,16">
+                                                            Margin="0,0,4,4">
                                                             <HorizontalStackLayout
                                                                 Spacing="8"
                                                                 VerticalOptions="Center">
+            
                                                                 <Border
-                                                                    WidthRequest="8"
-                                                                    HeightRequest="8"
+                                                                    WidthRequest="14"
+                                                                    HeightRequest="14"
                                                                     StrokeThickness="0"
-                                                                    VerticalOptions="Center">
+                                                                    VerticalOptions="Center"
+                                                                    IsVisible="False">
                                                                     <Border.StrokeShape>
                                                                         <RoundRectangle
                                                                             CornerRadius="100"/>
@@ -323,20 +349,44 @@
                                                                             TargetType="Border"
                                                                             Binding="{Binding .}"
                                                                             Value="Compartiendo">
-                                                                            <Setter
-                                                                                Property="BackgroundColor"
-                                                                                Value="Green"/>
+                                                                            <Setter Property="IsVisible" Value="True"/>
+                                                                            <Setter Property="BackgroundColor" Value="Green"/>
                                                                         </DataTrigger>
                                                                         <DataTrigger
                                                                             TargetType="Border"
                                                                             Binding="{Binding .}"
                                                                             Value="No Compartiendo">
-                                                                            <Setter
-                                                                                Property="BackgroundColor"
-                                                                                Value="Red"/>
+                                                                            <Setter Property="IsVisible" Value="True"/>
+                                                                            <Setter Property="BackgroundColor" Value="Red"/>
                                                                         </DataTrigger>
                                                                     </Border.Triggers>
                                                                 </Border>
+
+                                                                <Path
+                                                                    Aspect="Uniform"
+                                                                    HeightRequest="14"
+                                                                    WidthRequest="14"
+                                                                    VerticalOptions="Center"
+                                                                    Fill="{StaticResource Stone500}"
+                                                                    IsVisible="False">
+                                                                    <Path.Triggers>
+                                                                        <DataTrigger
+                                                                            TargetType="Path"
+                                                                            Binding="{Binding .}"
+                                                                            Value="Bloqueado">
+                                                                            <Setter Property="IsVisible" Value="True"/>
+                                                                            <Setter Property="Data" Value="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger
+                                                                            TargetType="Path"
+                                                                            Binding="{Binding .}"
+                                                                            Value="Te bloqueó">
+                                                                            <Setter Property="IsVisible" Value="True"/>
+                                                                            <Setter Property="Data" Value="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.87.63-3.59 1.68-4.96l11.28 11.28C15.59 19.37 13.87 20 12 20zm6.32-3.04L7.04 5.68C8.41 4.63 10.13 4 12 4c4.41 0 8 3.59 8 8 0 1.87-.63 3.59-1.68 4.96z"/>
+                                                                        </DataTrigger>
+                                                                    </Path.Triggers>
+                                                                </Path>
+            
                                                                 <Label
                                                                     Text="{Binding .}"
                                                                     FontFamily="Text-Variable"
@@ -370,7 +420,8 @@
                         FontSize="16"
                         TextColor="{StaticResource Stone500}"
                         HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="Center"/>
                 </Grid>
 
                 <Grid
@@ -427,7 +478,7 @@
                     </Grid>
                 </Grid>
             </Grid>
-
+            
             <!-- Group Settings -->
             <Grid
                 IsVisible="{Binding IsGroupSettingsVisible}"
@@ -506,7 +557,7 @@
 
                             <BoxView
                                 Style="{StaticResource Divider}"
-                                Margin="0,0,0,16"/>
+                                Margin="0,369,0,0"/>
 
                             <HorizontalStackLayout
                                 Spacing="6"
@@ -647,6 +698,316 @@
                         Text="Volver a miembros"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding HideGroupSettingsCommand}"
+                        HorizontalOptions="Fill"/>
+                </Grid>
+            </Grid>
+
+            <!-- Member Settings Panel -->
+            <Grid
+                IsVisible="{Binding IsMemberSettingsVisible}"
+                RowDefinitions="Auto,*,Auto"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill">
+
+                <!-- Header -->
+                <VerticalStackLayout
+                    Grid.Row="0"
+                    Spacing="0"
+                    Margin="0,0,0,16">
+                    <Border
+                        Style="{StaticResource SectionHeaderBorder}">
+                        <Label
+                            Text="Configuración de Miembro"
+                            Style="{StaticResource SectionHeaderLabel}"/>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Scrollable Content -->
+                <ScrollView
+                    Grid.Row="1"
+                    VerticalScrollBarVisibility="Never"
+                    VerticalOptions="Fill">
+
+                    <VerticalStackLayout
+                        Spacing="16"
+                        Margin="0,0,0,16">
+
+                        <!-- Member Profile Card -->
+                        <Border
+                            Style="{StaticResource CardBorderLight}"
+                            Padding="16"
+                            BindingContext="{Binding SelectedMember}"
+                            x:DataType="models:GroupMember">
+
+                            <VerticalStackLayout Spacing="0">
+                                <HorizontalStackLayout Spacing="16">
+                                    <Border
+                                        WidthRequest="50"
+                                        HeightRequest="50"
+                                        Style="{StaticResource IconContainer}"
+                                        HorizontalOptions="Start"
+                                        VerticalOptions="Center">
+                                        <Path
+                                            Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                            Fill="{StaticResource Stone400}"
+                                            Aspect="Uniform"
+                                            HeightRequest="24"
+                                            WidthRequest="20"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center"/>
+                                    </Border>
+
+                                    <Label
+                                        Text="{Binding DisplayUsername}"
+                                        FontFamily="Text-Variable"
+                                        FontSize="16"
+                                        TextColor="{StaticResource Stone700}"
+                                        VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+
+                                <BoxView
+                                    Style="{StaticResource Divider}"
+                                    Margin="0,16,0,16"/>
+
+                                <VerticalStackLayout Spacing="0">
+                                    <FlexLayout
+                                        Direction="Row"
+                                        Wrap="Wrap"
+                                        AlignItems="Start"
+                                        JustifyContent="Start"
+                                        Margin="0,0,0,16"
+                                        BindableLayout.ItemsSource="{Binding Tags}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate
+                                                x:DataType="x:String">
+                                                <Border
+                                                    BackgroundColor="{StaticResource White}"
+                                                    Stroke="{StaticResource Stone300}"
+                                                    StrokeThickness="1"
+                                                    StrokeShape="Rectangle"
+                                                    Padding="12,8"
+                                                    Margin="0,0,4,4">
+                                                    <HorizontalStackLayout
+                                                        Spacing="8"
+                                                        VerticalOptions="Center">
+            
+                                                        <Border
+                                                            WidthRequest="14"
+                                                            HeightRequest="14"
+                                                            StrokeThickness="0"
+                                                            VerticalOptions="Center"
+                                                            IsVisible="False">
+                                                            <Border.StrokeShape>
+                                                                <RoundRectangle
+                                                                    CornerRadius="100"/>
+                                                            </Border.StrokeShape>
+                                                            <Border.Triggers>
+                                                                <DataTrigger
+                                                                    TargetType="Border"
+                                                                    Binding="{Binding .}"
+                                                                    Value="Compartiendo">
+                                                                    <Setter Property="IsVisible" Value="True"/>
+                                                                    <Setter Property="BackgroundColor" Value="Green"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger
+                                                                    TargetType="Border"
+                                                                    Binding="{Binding .}"
+                                                                    Value="No Compartiendo">
+                                                                    <Setter Property="IsVisible" Value="True"/>
+                                                                    <Setter Property="BackgroundColor" Value="Red"/>
+                                                                </DataTrigger>
+                                                            </Border.Triggers>
+                                                        </Border>
+
+                                                        <Path
+                                                            Aspect="Uniform"
+                                                            HeightRequest="14"
+                                                            WidthRequest="14"
+                                                            VerticalOptions="Center"
+                                                            Fill="{StaticResource Stone500}"
+                                                            IsVisible="False">
+                                                            <Path.Triggers>
+                                                                <DataTrigger
+                                                                    TargetType="Path"
+                                                                    Binding="{Binding .}"
+                                                                    Value="Bloqueado">
+                                                                    <Setter Property="IsVisible" Value="True"/>
+                                                                    <Setter Property="Data" Value="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger
+                                                                    TargetType="Path"
+                                                                    Binding="{Binding .}"
+                                                                    Value="Te bloqueó">
+                                                                    <Setter Property="IsVisible" Value="True"/>
+                                                                    <Setter Property="Data" Value="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.87.63-3.59 1.68-4.96l11.28 11.28C15.59 19.37 13.87 20 12 20zm6.32-3.04L7.04 5.68C8.41 4.63 10.13 4 12 4c4.41 0 8 3.59 8 8 0 1.87-.63 3.59-1.68 4.96z"/>
+                                                                </DataTrigger>
+                                                            </Path.Triggers>
+                                                        </Path>
+            
+                                                        <Label
+                                                            Text="{Binding .}"
+                                                            FontFamily="Text-Variable"
+                                                            FontSize="11"
+                                                            TextColor="{StaticResource Stone500}"
+                                                            VerticalOptions="Center"
+                                                            LineBreakMode="NoWrap"/>
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </FlexLayout>
+                                    
+                                    <Label
+                                        Text="{Binding LastActivityAt, StringFormat='Última actividad: {0:dd/MM/yyyy - HH:mm}'}"
+                                        FontFamily="Text-Variable"
+                                        FontSize="11"
+                                        TextColor="{StaticResource Stone500}"
+                                        HorizontalOptions="End"/>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <BoxView
+                            Style="{StaticResource Divider}"
+                            Margin="0,0,0,0"/>
+                        
+                        <VerticalStackLayout Spacing="16">
+                            <Border Style="{StaticResource CardBorderLight}" Padding="16">
+                                <VerticalStackLayout Spacing="12">
+            
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label
+                                            Text="Compartir ubicación"
+                                            Style="{StaticResource BoldLabel}"
+                                            TextColor="{StaticResource Stone800}"/>
+                                        <Label
+                                            Text="Controla si este usuario puede ver tu ubicación actual."
+                                            Style="{StaticResource BodyLabel}"
+                                            FontSize="11"
+                                            TextColor="{StaticResource Stone500}"/>
+                                    </VerticalStackLayout>
+
+                                    <Button
+                                        Text="{Binding SelectedMemberBlockButtonText}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        FontSize="13"
+                                        HeightRequest="40"
+                                        HorizontalOptions="Fill"
+                                        Command="{Binding ToggleBlockMemberCommand}"/>
+                
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+                        
+                        <!-- Danger Zone -->
+                        <VerticalStackLayout
+                            Spacing="16"
+                            IsVisible="{Binding IsCurrentUserOwner}">
+
+                            <BoxView
+                                Style="{StaticResource Divider}"
+                                Margin="0,169,0,0"/>
+
+                            <HorizontalStackLayout
+                                Spacing="6"
+                                VerticalOptions="Center">
+
+                                <Border
+                                    BackgroundColor="#FEF2F2"
+                                    Stroke="#FCA5A5"
+                                    StrokeThickness="1"
+                                    Padding="8,4"
+                                    StrokeShape="Rectangle">
+
+                                    <HorizontalStackLayout
+                                        Spacing="6"
+                                        VerticalOptions="Center">
+
+                                        <Path
+                                            Data="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2v-4h2v4z"
+                                            Fill="#DC2626"
+                                            Aspect="Uniform"
+                                            HeightRequest="14"
+                                            WidthRequest="14"
+                                            VerticalOptions="Center"/>
+
+                                        <Label
+                                            Text="ZONA DE PELIGRO"
+                                            FontFamily="Text-Variable"
+                                            FontSize="11"
+                                            FontAttributes="Bold"
+                                            TextColor="#DC2626"
+                                            VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </HorizontalStackLayout>
+
+                            <Border
+                                BackgroundColor="{StaticResource Stone50}"
+                                Stroke="{StaticResource Stone300}"
+                                StrokeThickness="1"
+                                StrokeShape="Rectangle"
+                                Padding="16">
+
+                                <Grid
+                                    ColumnDefinitions="*,Auto"
+                                    ColumnSpacing="16">
+
+                                    <VerticalStackLayout
+                                        VerticalOptions="Center"
+                                        Spacing="4">
+
+                                        <Label
+                                            Text="Expulsar del grupo"
+                                            FontFamily="Text-Variable"
+                                            FontSize="14"
+                                            FontAttributes="Bold"
+                                            TextColor="{StaticResource Stone800}"/>
+
+                                        <Label
+                                            Text="El usuario tendrá que usar el código para volver a entrar"
+                                            FontFamily="Text-Variable"
+                                            FontSize="11"
+                                            TextColor="{StaticResource Stone500}"/>
+                                    </VerticalStackLayout>
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Text="Expulsar"
+                                        Style="{StaticResource PrimaryButton}"
+                                        BackgroundColor="#DC2626"
+                                        TextColor="{StaticResource White}"
+                                        FontSize="13"
+                                        HeightRequest="36"
+                                        Padding="16,0"
+                                        CornerRadius="0"
+                                        VerticalOptions="Center"
+                                        Command="{Binding KickMemberCommand}"/>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <!-- Footer -->
+                <Grid 
+                    Grid.Row="2"
+                    RowDefinitions="Auto,Auto"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="End">
+
+                    <BoxView
+                        Grid.Row="0"
+                        Style="{StaticResource Divider}"
+                        Margin="0,0,0,16"
+                        HorizontalOptions="Fill"/>
+
+                    <Button
+                        Grid.Row="1"
+                        Text="Volver a miembros"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding BackToMembersCommand}"
                         HorizontalOptions="Fill"/>
                 </Grid>
             </Grid>

@@ -136,5 +136,26 @@ namespace Waybon.App.Services.Implementations
 
             return result.Success;
         }
+
+        public async Task<bool> KickMemberAsync(int groupId, TargetUserRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync
+            (
+                $"api/groups/{groupId}/kick-member", request, cancellationToken
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.Success;
+        }
     }
 }

@@ -11,5 +11,6 @@ namespace Waybon.App.Services.Interfaces
         Task<RegenerateJoinCodeResponse?> RegenerateJoinCodeAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default);
         Task<bool> DeleteGroupAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default);
         Task<bool> LeaveGroupAsync(int groupId, SessionIdRequest request, CancellationToken cancellationToken = default);
+        Task<bool> KickMemberAsync(int groupId, TargetUserRequest request, CancellationToken cancellationToken = default);
     }
 }

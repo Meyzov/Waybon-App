@@ -13,6 +13,9 @@ namespace Waybon.App.Models
         public partial string Username { get; set; } = string.Empty;
 
         [ObservableProperty]
+        public partial string RoleName { get; set; } = string.Empty;
+
+        [ObservableProperty]
         public partial bool SharingEnabled { get; set; }
 
         [ObservableProperty]
@@ -31,5 +34,9 @@ namespace Waybon.App.Models
         [JsonIgnore]
         [ObservableProperty]
         public partial ObservableCollection<string> Tags { get; set; } = [];
+
+        [JsonIgnore]
+        [ObservableProperty]
+        public partial bool IsCurrentUser { get; set; }
     }
 }
