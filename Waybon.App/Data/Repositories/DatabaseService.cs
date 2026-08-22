@@ -10,25 +10,23 @@ namespace Waybon.App.Data.Repositories
 
         public DatabaseService()
         {
-            var dbPath = Path.Combine
-            (
-                FileSystem.AppDataDirectory, "waybon.db3"
-            );
-
+            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "waybon.db3");
             Connection = new SQLiteAsyncConnection(dbPath);
         }
 
         public async Task InitializeAsync()
         {
             await Connection.CreateTableAsync<LocalGroup>();
-            await Connection.CreateTableAsync<LocalMember>();
+            await Connection.CreateTableAsync<LocalUser>();
+            await Connection.CreateTableAsync<LocalGroupMember>();
             await Connection.CreateTableAsync<UserLocation>();
         }
 
         public async Task ClearAllAsync()
         {
             await Connection.DeleteAllAsync<LocalGroup>();
-            await Connection.DeleteAllAsync<LocalMember>();
+            await Connection.DeleteAllAsync<LocalUser>();
+            await Connection.DeleteAllAsync<LocalGroupMember>();
             await Connection.DeleteAllAsync<UserLocation>();
         }
     }

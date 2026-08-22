@@ -308,9 +308,10 @@ namespace Waybon.App.ViewModels
                 foreach (var group in groupsToRemove)
                 {
                     JoinedGroups.Remove(group);
-                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
-                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
                 }
+
+                OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                OnPropertyChanged(nameof(IsGroupsLoaderVisible));
 
                 foreach (var group in groups.OrderBy(g => g.Name))
                 {
@@ -395,9 +396,10 @@ namespace Waybon.App.ViewModels
                 foreach (var group in groupsToRemove)
                 {
                     JoinedGroups.Remove(group);
-                    OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
-                    OnPropertyChanged(nameof(IsGroupsLoaderVisible));
                 }
+
+                OnPropertyChanged(nameof(IsNoGroupsMessageVisible));
+                OnPropertyChanged(nameof(IsGroupsLoaderVisible));
 
                 foreach (var group in groups.OrderBy(g => g.Name))
                 {
@@ -594,7 +596,7 @@ namespace Waybon.App.ViewModels
                     return;
                 }
 
-                var localMembersToSave = MapToLocalMembers(selectedGroupId, members);
+                var localMembersToSave = MapToLocalUsers(members);
                 FormatMembersForDisplay(currentUserId, selectedGroupOwnerId, members);
 
                 // ======================
@@ -784,7 +786,6 @@ namespace Waybon.App.ViewModels
         [RelayCommand(AllowConcurrentExecutions = false)]
         private async Task BackToGroupsAsync()
         {
-            await LoadCachedGroupsAsync();
             _ = RefreshGroupsAsync();
 
             ClearSelectedGroupState();
@@ -889,7 +890,6 @@ namespace Waybon.App.ViewModels
 
         private async Task HandleCreateGroupSuccessAsync()
         {
-            await LoadCachedGroupsAsync();
             _ = RefreshGroupsAsync();
 
             await _dialogService.ShowAlertAsync("¡Listo!", "El grupo ha sido creado satisfactoriamente.", "Ok");
@@ -938,7 +938,6 @@ namespace Waybon.App.ViewModels
 
         private async Task HandleJoinGroupSuccessAsync()
         {
-            await LoadCachedGroupsAsync();
             _ = RefreshGroupsAsync();
 
             await _dialogService.ShowAlertAsync("¡Listo!", "Te has unido al grupo satisfactoriamente.", "Ok");
@@ -1222,7 +1221,8 @@ namespace Waybon.App.ViewModels
                 message = $"Has bloqueado a {SelectedMember.Username}.";
             }
 
-            BuildMemberTags(SelectedMember);
+            _ = RefreshMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
+
             await _dialogService.ShowAlertAsync("¡Listo!", message, "Ok");
         }
 
@@ -1280,7 +1280,6 @@ namespace Waybon.App.ViewModels
                 return;
             }
 
-            await LoadCachedMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
             _ = RefreshMembersAsync(SelectedGroupId, SelectedGroupOwnerId);
 
             await _dialogService.ShowAlertAsync("¡Listo!", $"Has expulsado a {SelectedMember.DisplayUsername} del grupo.", "Ok");
@@ -1332,31 +1331,32 @@ namespace Waybon.App.ViewModels
             ];
         }
 
-        private static List<GroupMember> MapToGroupMembers(IEnumerable<LocalMember> members)
+        private static List<GroupMember> MapToGroupMembers(IEnumerable<LocalUser> users)
         {
             return
             [
-                .. members.Select(m => new GroupMember
+                .. users.Select(u => new GroupMember
                 {
-                    UserId = m.UserId,
-                    Username = m.Username,
-                    SharingEnabled = m.SharingEnabled,
-                    BlockedByMe = m.BlockedByMe,
-                    BlockingMe = m.BlockingMe,
-                    LastActivityAt = m.LastActivityAt
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    RoleName = u.RoleName,
+                    SharingEnabled = u.SharingEnabled,
+                    BlockedByMe = u.BlockedByMe,
+                    BlockingMe = u.BlockingMe,
+                    LastActivityAt = u.LastActivityAt
                 })
             ];
         }
 
-        private static List<LocalMember> MapToLocalMembers(int groupId, IEnumerable<GroupMember> members)
+        private static List<LocalUser> MapToLocalUsers(IEnumerable<GroupMember> members)
         {
             return
             [
-                .. members.Select(m => new LocalMember
+                .. members.Select(m => new LocalUser
                 {
-                    GroupId = groupId,
                     UserId = m.UserId,
                     Username = m.Username,
+                    RoleName = m.RoleName,
                     SharingEnabled = m.SharingEnabled,
                     BlockedByMe = m.BlockedByMe,
                     BlockingMe = m.BlockingMe,

@@ -26,14 +26,10 @@ namespace Waybon.App.ViewModels
         public partial string Password { get; set; } = string.Empty;
 
         [ObservableProperty]
-        public partial string RoleName { get; set; } = string.Empty;
-
-        [ObservableProperty]
         public partial bool IsPassword { get; set; } = true;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(RegisterButtonText))]
-        [NotifyCanExecuteChangedFor(nameof(RegisterCommand))]
         public partial bool IsBusy { get; set; }
 
         public string RegisterButtonText => IsBusy ? "Registrando..." : "Registrarse";
@@ -43,10 +39,10 @@ namespace Waybon.App.ViewModels
         // Commands
         // ======================
 
-        [RelayCommand(CanExecute = nameof(CanRegister))]
+        [RelayCommand(AllowConcurrentExecutions = false)]
         private async Task RegisterAsync()
         {
-            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(RoleName))
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
             {
                 await _dialogService.ShowAlertAsync("Error", "Completa todos los campos.", "Ok");
                 return;
@@ -60,8 +56,7 @@ namespace Waybon.App.ViewModels
                 {
                     Username = Username.Trim(),
                     Email = Email.Trim().ToLower(),
-                    Password = Password,
-                    RoleName = RoleName.Trim()
+                    Password = Password
                 };
 
                 var success = await _authService.RegisterAsync(request);
@@ -90,12 +85,5 @@ namespace Waybon.App.ViewModels
 
         [RelayCommand]
         private async Task NavigateToLoginAsync() => await _navigationService.GoToAsync("//login");
-
-
-        // ======================
-        // Helpers
-        // ======================
-
-        private bool CanRegister() => !IsBusy;
     }
 }

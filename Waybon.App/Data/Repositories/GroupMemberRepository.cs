@@ -8,31 +8,44 @@ namespace Waybon.App.Data.Repositories
     {
         private readonly SQLiteAsyncConnection _db = database.Connection;
 
-        public async Task SaveMembersAsync(int groupId, IEnumerable<LocalMember> members)
+        public Task SaveUserAsync(LocalUser user) => _db.InsertOrReplaceAsync(user);
+
+        public async Task SaveMembersAsync(int groupId, IEnumerable<LocalUser> users)
         {
-            await _db.RunInTransactionAsync
-            (
-                tran =>
+            await _db.RunInTransactionAsync(tran =>
+            {
+                tran.Execute("DELETE FROM LocalGroupMember WHERE GroupId = ?", groupId);
+
+                foreach (var user in users)
                 {
-                    tran.Execute("DELETE FROM LocalMember WHERE GroupId = ?", groupId);
-                    tran.InsertAll(members);
+                    tran.InsertOrReplace(user);
+                    tran.Insert
+                    (
+                        new LocalGroupMember
+                        {
+                            GroupId = groupId,
+                            UserId = user.UserId
+                        }
+                    );
                 }
-            );
+            });
         }
 
-        public async Task<IEnumerable<LocalMember>> GetMembersAsync(int groupId)
+        public async Task<IEnumerable<LocalUser>> GetMembersAsync(int groupId)
         {
-            return await _db.Table<LocalMember>().Where(m => m.GroupId == groupId).ToListAsync();
+            var query = "SELECT U.* FROM LocalUser AS U JOIN LocalGroupMember AS GM ON U.UserId = GM.UserId WHERE GM.GroupId = ?";
+            return await _db.QueryAsync<LocalUser>(query, groupId);
         }
 
-        public Task ClearMembersAsync(int groupId)
-        {
-            return _db.ExecuteAsync("DELETE FROM LocalMember WHERE GroupId = ?", groupId);
-        }
+        public Task ClearMembersAsync(int groupId) => _db.ExecuteAsync("DELETE FROM LocalGroupMember WHERE GroupId = ?", groupId);
 
-        public Task ClearAllMembersAsync()
+        public async Task ClearAllMembersAsync()
         {
-            return _db.DeleteAllAsync<LocalMember>();
+            await _db.RunInTransactionAsync(tran =>
+            {
+                tran.DeleteAll<LocalUser>();
+                tran.DeleteAll<LocalGroupMember>();
+            });
         }
     }
 }

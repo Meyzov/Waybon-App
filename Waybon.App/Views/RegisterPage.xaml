@@ -109,18 +109,6 @@
                                 </Grid>
                             </Border>
                         </VerticalStackLayout>
-
-                        <!-- Role field -->
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Rol" Style="{StaticResource FormLabel}"/>
-
-                            <Border Style="{StaticResource FormFieldBorder}" Padding="8,0">
-                                <Entry
-                                    Text="{Binding RoleName}"
-                                    Style="{StaticResource FormEntry}"
-                                    Placeholder="Rol de usuario"/>
-                            </Border>
-                        </VerticalStackLayout>
                     </VerticalStackLayout>
 
                     <!-- Divider -->

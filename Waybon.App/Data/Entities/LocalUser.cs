@@ -2,17 +2,14 @@
 
 namespace Waybon.App.Data.Entities
 {
-    public class LocalMember
+    public class LocalUser
     {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
-
-        [Indexed]
-        public int GroupId { get; set; }
-
+        [PrimaryKey]
         public Guid UserId { get; set; }
 
         public string Username { get; set; } = string.Empty;
+
+        public string RoleName { get; set; } = string.Empty;
 
         public bool SharingEnabled { get; set; }
 
